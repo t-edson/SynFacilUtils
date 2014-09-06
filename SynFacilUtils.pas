@@ -2,12 +2,12 @@
 SynFacilUtils
 =============
 Utilidades para la creación de editores con el resaltador SynFacilSyn.
-Por Tito Hinostroza.
 
-Versión 0.1b
+Versión 0.1
 ===========
 Por Tito Hinostroza 20/08/2014
 Primera versión de la librería, creada a partir de la librería UtilEditSyn.
+Trabaja con SynFacilCompletion 0.3 o superior
 }
 unit SynFacilUtils; {$mode objfpc}{$H+}
 interface
