@@ -26,7 +26,7 @@ const
   MSG_SAVED = 'Saved';
   MSG_NO_SAVED = 'Modified';
   MSG_FILE_NOSAVED = 'File %s, has been modified.' +
-                     #13#10 + '¿Save?';
+                     #13#10 + 'Save?';
   MSG_FILE_NOT_FOUND = 'File not found: ';
   MSG_ERROR_SAVING = 'Error saving file: ';
   MSG_OVERWRITE = 'File %s already exists.' + #13#10 +
