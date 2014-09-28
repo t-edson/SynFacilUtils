@@ -1,5 +1,5 @@
-SynFacilUtils
-=============
+SynFacilUtils 0.2
+=================
 
 Librería para implementación de las funcionalidades típicas de un editor de texto usando el componente SynEdit. Está basado en la librería 'UtilEditSyn' y en el resaltador 'SynFacilCompletion'.
 
@@ -8,7 +8,7 @@ Incluye funciones para el manejo de los formatos de salto de línea más comunes
 Permite la implementación Sencilla de las funciones de Apertura, Cierre, Nuevo archivo, etc.
 
 Maneja las verificaciones de existencia de archivo, o archivo modificado, mostrando los
-diálogos apropiados, en cada caso.
+diálogos apropiados, en cada caso. También incluye un modo de edición por columna (no implementado del todo).
 
 Puede manejar diversos mensajes de estado del editor, usando una barra de estado.
 
@@ -17,8 +17,6 @@ También permite guardar un histórico de los archivos abiertos recientemente.
 Para usar la librería, se debe incluir obligatoriamente un control TSynEdit (el paquete SynEdit para ser estcritos) y opcionalmente los diálogos TOpenDialog y TSaveDialog, si se desea utilizar las funcionalidades de apertura y grabado de archivos.
 
 La librería requiere los siguientes archivos:
-
-* SynCompletionQ.pas -> Es el reemplazao de la unidad SynCompeltion.pas que viene con Lazarus. Es la versión personalizada para la librería.
 
 * SynFacilHighlighter.pas -> Es el resaltador de sintaxis que usa SynFacilCompletion. Debe ser de la versión 0.9.1 o superior.
 
@@ -114,8 +112,8 @@ Con este código se leerá la carpeta '.\languages', y se creará un ítem en el
 El método LoadSyntaxFromPath(), carga un archivo de sintaxis, usando la extensión del archivo actual para decidir el archivo a usar. 
 
 IMPORTANTE. 
-La librería toma el control de los  eventos OnChange(), OnStatusChange(), OnMouseDown(), OnKeyDown(), OnKeyUp(), OnUTF8KeyPress y OnCommandProcessed().
+La librería toma el control de los  eventos OnChange(), OnStatusChange(), OnMouseDown(), OnKeyDown(), OnKeyUp(), OnKeyPress(),  OnUTF8KeyPress y OnCommandProcessed().
 
-Si se necesita usar los evento OnChange(), OnMouseDown(), OnKeyDown() u OnKeyUp() se debe usar sus equivalentes TSynFacilEditor.OnEditChange(), TSynFacilEditor.OnMouseDown(),TSynFacilEditor.OnKeyDown() o TSynFacilEditor.OnKeyUp().
+Si se necesita usar los eventos OnChange(), OnMouseDown(), OnKeyDown(), OnKeyUp() u OnKeyPress(), se debe usar sus equivalentes en TSynFacilEditor.
 
 Para un ejemplo más completo de uso, ver los proyecto de muestra adjuntos.

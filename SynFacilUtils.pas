@@ -1,23 +1,27 @@
 {
-SynFacilUtils
-=============
+SynFacilUtils 0.2b
+==================
+Por Tito Hinostroza 20/08/2014
+* Se agrega el pocesamiento de teclas de control en evento KeyDosn() para manejar el
+modo columna.
+* Se agregan los eventos OnKeyPress() y  OnUTF8KeyPress()
+* Se incluye todo el procesamiento de edición em modo columna en esta unidad.
+
+Descripción
+===========
 Utilidades para la creación de editores con el resaltador SynFacilSyn.
 
-Versión 0.1
-===========
-Por Tito Hinostroza 20/08/2014
-Primera versión de la librería, creada a partir de la librería UtilEditSyn.
-Trabaja con SynFacilCompletion 0.3 o superior
+Trabaja con SynFacilCompletion 0.4 o superior
 }
 unit SynFacilUtils; {$mode objfpc}{$H+}
 interface
-uses  Classes, SysUtils, SynEdit, SynEditMarkupHighAll,
+uses  Classes, SysUtils, Clipbrd, SynEdit, SynEditMarkupHighAll,
       lconvencoding, Graphics, FileUtil, Dialogs, Controls, Forms, LCLType, ComCtrls,
       SynEditKeyCmds, SynEditTypes, Menus, strUtils, IniFiles,
       SynFacilCompletion;  //necesario para rutinas de manejo de sintaxis
 const
 {English messages}
-{  MSG_ROW = 'row=';
+  MSG_ROW = 'row=';
   MSG_COL = 'col=';
   MSG_SAVED = 'Saved';
   MSG_NO_SAVED = 'Modified';
@@ -30,9 +34,11 @@ const
   MSG_RECENTS = '&Recents';
   MSG_LANGUAGES = '&Languages';
   MSG_NO_RECENTS = 'No files';
-  MSG_EDIT_NO_INIT = 'Internal: Not initialized Editor.';}
+  MSG_EDIT_NO_INIT = 'Internal: Not initialized Editor.';
+  MSG_NO_LANGUAGE = 'No language';
+
 {Mensajes en español}
-  MSG_ROW = 'fil=';
+{  MSG_ROW = 'fil=';
   MSG_COL = 'col=';
   MSG_SAVED = 'Guardado';
   MSG_NO_SAVED = 'Sin Guardar';
@@ -47,7 +53,7 @@ const
   MSG_NO_RECENTS = 'No hay archivos';
   MSG_EDIT_NO_INIT = 'Error Interno: Editor no inicializado.';
   MSG_NO_LANGUAGE = 'Sin lenguaje';
-
+}
 type
   //Tipos de delimitador de línea de archivo.
   TDelArc = (TAR_DESC,    //Tipo desconocido
@@ -61,6 +67,7 @@ type
 
   //Define las propiedades que debe tener un texto que se está editando
   TSynFacilEditor = class
+    procedure edKeyPress(Sender: TObject; var Key: char);
     procedure edUTF8KeyPress(Sender: TObject; var UTF8Key: TUTF8Char);
   private
     procedure DoSelectLanguage(Sender: TObject);
@@ -124,6 +131,8 @@ type
     OnMouseDown  : TMouseEvent;
     OnKeyUp      : TKeyEvent;
     OnKeyDown    : TKeyEvent;
+    OnKeyPress   : TKeyPressEvent;
+    OnUTF8KeyPress: TUTF8KeyPressEvent;
     //funciones comunes de un editor
     procedure NewFile(QuerySave: boolean=true);
     procedure LoadFile(arc8: string);
@@ -180,6 +189,7 @@ function CargarArchivoLin(arc8: string; Lineas: TStrings;
                            var TipArc: TDelArc; var CodArc: string): string;
 function GuardarArchivoLin(arc0: string; Lineas: TStrings;
                            var TipArc: TDelArc; var CodArc: string): string;
+procedure InsertaColumnasBloque(ed: TsynEdit; var key: TUTF8Char);
 
 implementation
 const szChar = SizeOf(Char);
@@ -251,7 +261,7 @@ var ar: file;
 begin
    //Lee bloque de datos
    AssignFile(ar,archivo);
-   reset(ar,1);
+   reset(ar,1);  { TODO : Dio error al abrir un archivo de solo lectura }
    BlockRead(ar,Bolsa,TAM_BOL,Leidos);  //Lectura masiva
    CloseFile(ar);
    bolsa[Leidos] := #0; //agrega delimitador
@@ -359,6 +369,90 @@ begin
     StringToFile(Lineas.Text,arc0);
   end;
 end;
+procedure InsertTextOnBlock(ed: TsynEdit; txt: string);
+//Inserta un texto en todas las filas de la selección.
+//Solo trabaja en modo columna
+var
+  tmp: pchar;
+  curX,curY : longint;
+  p1,p2:TPoint;
+begin
+  if ed.SelectionMode <> smColumn then exit;
+  (*Verifica ancho de selección. Debe dejarse en ancho nulo, antes de pegar el caracter en
+   la selección *)
+  if ed.SelAvail then begin  //se podría haber usado  "if BlockBegin.x <> BlockEnd.x", pero
+                             //se tendría problemas porque las posiciones físicas pueden
+                             //coincidir aún cuando las posiciones lógcas, no.
+      p2 := ed.BlockEnd;  //Lee final de selección
+      //hay selección de por lo menos un caracter de ancho
+      ed.ExecuteCommand(ecDeleteChar, #0, nil);  //limpia selección
+      //Ahora el bloque de selección tiene ancho cero, alto 1 y el cursor está dentro.
+      //Ahora se debe restaurar la altura del bloque, modificando BlockEnd.
+      //Se usa la posición horizontal del cursor, que coincide con el bloque
+
+      //Se usa transformación, porque BlockEnd, trabaja en coordenada lógica
+      p2.x:=ed.PhysicalToLogicalCol(ed.Lines[p2.y-1],p2.y-1,ed.CaretX);
+      ed.BlockEnd:=p2;  //restaura también, la altura original del bloque
+      ed.SelectionMode := smColumn;    //restaura el modo columna
+  end;
+  //El bloque de selección tiene ahora ancho cero y alto original.
+
+  (* la idea aquí es poner en el portapapeles, una estructura con varias filas (tantas cono haya
+  seleccionada) del caracter que se quiera insertar. *)
+  //Guarda cursor
+  curX := ed.CaretX;
+  curY := ed.CaretY;
+  //Lee coordenadas del bloque nulo
+  p1 := ed.BlockBegin;
+  p2 := ed.BlockEnd;
+
+  tmp := PChar(DupeString(txt+#13#10,p2.y-p1.y)+txt);  //construye texto
+  ed.DoCopyToClipboard(tmp,'');                        //pone en portapapeles
+
+  (*Aquí ya se tiene en el portapapeles, la estructura repetida del caracter a insertar*)
+  //pega la selección modificada
+  ed.CaretY := p1.y;  //pone cursor arriba para pegar
+  //   ed.SelectionMode := smNormal;  //debería poder trabajar en Normal
+  //Si la estructura en el portapapeles, es correcta, se copiará correctamente en columnas.
+  ed.ExecuteCommand(ecPaste,#0,nil);
+
+  //desplaza Cursor y bloque, para escribir siguiente caracter a la derecha
+  curX += 1;
+//   p1.x += 1;
+//   p2.x += 1;
+  p1.x := ed.PhysicalToLogicalCol(ed.Lines[p1.y-1],p1.y-1,curX);
+  p2.x := ed.PhysicalToLogicalCol(ed.Lines[p2.y-1],p2.y-1,curX);
+  //calcula nuevamente la posición física del cursor,  para evitar que el cursor
+  //pueda caer en medio de una tabulación.
+  CurX := ed.LogicalToPhysicalCol(ed.Lines[p1.y-1],p1.y-1,p1.x);
+
+  //restaura posición de cursor
+  ed.CaretX := curX;
+  ed.CaretY := curY;
+
+  //restaura  bloque de selección, debe hacerse después de posicionar el cursor
+  ed.BlockBegin := p1;
+  ed.BlockEnd := p2;
+end;
+procedure InsertaColumnasBloque(ed: TsynEdit; var key: TUTF8Char);
+//Inserta un caracter en un bloque de selección en modo columna.
+//El editor debe estar en modo columna con un bloque de selección activo.
+//El texto se insertará en todas las filas de la selección.
+{ TODO : Verificar funcionamiento en líneas con tabulaciones.}
+begin
+   //Verifica el caso particular en que se tiene solo una fila de selección en modo columna
+   //No debería pasar porque se filtra este caso en UTF8KeyPress
+   if ed.BlockBegin.y = ed.BlockEnd.y then begin
+      //no hay mucho que procesar en modo columna
+      ed.ExecuteCommand(ecChar,key,nil);
+      //cancela procesamiento, para que no procese de nuevo el caracter
+      key := #0;
+      Exit;
+   end;
+   InsertTextOnBlock(ed, key);  //Inserta en blqoue
+   ed.SelectionMode := smColumn;       //mantiene modo de columna
+   key := #0;        //cancela procesamiento de teclado
+end;
 
 { TSynFacilEditor }
 //respuesta a eventos del editor
@@ -400,9 +494,71 @@ begin
 end;
 procedure TSynFacilEditor.edKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
+var c: TUTF8char;
 begin
   //Pasa el evento
   if OnKeyDown <> nil then OnKeyDown(Sender, Key, Shift);
+  //Controla la selección en modo columna
+  if ed.SelectionMode = smColumn then begin
+    //debug.OutPut('KeyDown:' + IntToStr(key));
+      case Key of
+      VK_ESCAPE: begin
+         ed.SelectionMode := smNormal;  //cancela el modo columna
+         exit;            //sale
+         end;
+      VK_LEFT: begin
+          ed.ExecuteCommand(ecColSelLeft, #0, nil);   //procesa
+          key := 0;      //cancela edición
+          end;
+      VK_RIGHT: begin
+          ed.ExecuteCommand(ecColSelRight, #0, nil);
+          key := 0;      //cancela edición
+          end;
+      VK_UP   :
+          if Shift = [] then begin
+             ed.ExecuteCommand(ecColSelUp, #0, nil);
+             key := 0;      //cancela edición
+          end;
+      VK_DOWN :
+          if Shift = [] then begin
+             ed.ExecuteCommand(ecColSelDown, #0, nil);
+             key := 0;      //cancela edición
+          end;
+      VK_TAB: begin     //El "tab" no lo detecta KeyPress()
+    //      c := UnicodeToUTF8(9);
+          c := #9;
+          InsertaColumnasBloque(ed, c);
+          key := 0;      //cancela edición
+          end;
+      VK_BACK: begin     //El "back" no lo detecta KeyPress()
+    //      c := #8;
+          ed.ExecuteCommand(ecColSelLeft, #0, nil);   //procesa
+          key := 0;      //cancela edición
+          end;
+      VK_V: begin
+          if Shift = [ssCtrl] then begin  //Ctrl+V
+            InsertTextOnBlock(ed, Clipboard.AsText);  //Inserta en blqoue
+            Clipboard.AsText := '';  //porque InsertTextOnBlock(), ya lo corrompió
+            ed.SelectionMode := smColumn;       //mantiene modo de columna
+            key := 0;        //cancela procesamiento de teclado
+          end;
+        end;
+      VK_INSERT: begin
+          if Shift = [ssShift] then begin  //Shift+Insert
+            InsertTextOnBlock(ed, Clipboard.AsText);  //Inserta en blqoue
+            Clipboard.AsText := '';  //porque InsertTextOnBlock(), ya lo corrompió
+            ed.SelectionMode := smColumn;       //mantiene modo de columna
+            key := 0;        //cancela procesamiento de teclado
+          end;
+      end;
+      end;
+      //otro caracter, le deja para que lo procese KeyPress y vea si sale del modo columna
+  end;
+  //valida si pasa a modo normal
+  if (ed.BlockBegin.y = ed.BlockEnd.y) then begin
+    ed.SelectionMode := smNormal;  //cancela el modo columna
+    exit;            //sale
+  end;
 end;
 procedure TSynFacilEditor.edKeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);
@@ -412,13 +568,32 @@ begin
   //Pasa el evento
   if OnKeyUp <> nil then OnKeyUp(Sender, Key, Shift);
 end;
+
+procedure TSynFacilEditor.edKeyPress(Sender: TObject; var Key: char);
+begin
+  //en modo columna, dejamos que se procese con UTF8KeyPress
+  if ed.SelectionMode = smColumn then Key:=#0;
+  //Pasa evento
+  if OnKeyPress <> nil then OnKeyPress(Sender, Key);
+end;
+
 procedure TSynFacilEditor.edUTF8KeyPress(Sender: TObject; var UTF8Key: TUTF8Char
   );
 begin
   //pasa el evento al resaltador por si necesita abrir el menú de completado
   hl.UTF8KeyPress(Sender, UTF8Key);
+  ////////// Procesa el modo columna //////////
+  //Si hay solo una fila de selección, se devuelve al modo normal y se deja fluir.
+  if (ed.SelectionMode = smColumn) and (ed.BlockBegin.y = ed.BlockEnd.y) then begin
+    ed.SelectionMode:=smNormal;
+    exit;
+  end;
+  //solo trabaja cuando el editor tiene el enfoque y está en modo columna
+  if ed.Focused and (ed.SelectionMode = smColumn) then begin
+     InsertaColumnasBloque(ed, UTF8Key);
+  end;
   //Pasa el evento
-//  if OnUTF8KeyPress <> nil then OnUTF8KeyPress(Sender, Key);
+  if OnUTF8KeyPress <> nil then OnUTF8KeyPress(Sender, UTF8Key);
 end;
 
 //Manejo de archivos recientes
@@ -929,6 +1104,7 @@ begin
   ed.OnMouseDown:=@edMouseDown;
   ed.OnKeyUp:=@edKeyUp;     //para funcionamiento del completado
   ed.OnKeyDown:=@edKeyDown;
+  ed.OnKeyPress:=@edKeyPress;
   ed.OnUTF8KeyPress:=@edUTF8KeyPress;
   ed.OnCommandProcessed:=@edCommandProcessed;  //necesita para actualizar el cursor
 //  RecentFiles := TStringList.Create;
