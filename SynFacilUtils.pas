@@ -6,12 +6,14 @@ Por Tito Hinostroza 20/08/2014
 modo columna.
 * Se agregan los eventos OnKeyPress() y  OnUTF8KeyPress()
 * Se incluye todo el procesamiento de edición em modo columna en esta unidad.
+* Se crea el método InitMenuLineEnding(), para configurar un menú con los tipos de
+delimitadores de línea.
 
 Descripción
 ===========
 Utilidades para la creación de editores con el resaltador SynFacilSyn.
 
-Trabaja con SynFacilCompletion 0.4 o superior
+Trabaja con SynFacilCompletion 0.5 o superior
 }
 unit SynFacilUtils; {$mode objfpc}{$H+}
 interface
@@ -56,7 +58,7 @@ const
 }
 type
   //Tipos de delimitador de línea de archivo.
-  TDelArc = (TAR_DESC,    //Tipo desconocido
+  TLineEnd = (TAR_DESC,    //Tipo desconocido
              TAR_DOS,     //Tipo Windows/DOS
              TAR_UNIX,    //Tipo Unix/Linux
              TAR_MAC      //Tipo Mac OS
@@ -69,6 +71,7 @@ type
   TSynFacilEditor = class
     procedure edKeyPress(Sender: TObject; var Key: char);
     procedure edUTF8KeyPress(Sender: TObject; var UTF8Key: TUTF8Char);
+    procedure itClick(Sender: TObject);
   private
     procedure DoSelectLanguage(Sender: TObject);
     procedure edKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -83,10 +86,10 @@ type
     procedure MarkLanguageMenu(XMLfile: string);
     procedure menRecentsClick(Sender: TObject);
   private
-    ed     : TSynEdit;        //referencia al editor
+    ed          : TSynEdit;    //referencia al editor
     fPanLangName: TStatusPanel;
     menRecents  : TMenuItem;  //Menú de archivos recientes
-    mnLanguages: TMenuItem;  //Menú de lenguajes
+    mnLanguages : TMenuItem;  //Menú de lenguajes
     LangPath    : string;     //ruta donde están los lengaujes
     MaxRecents  : integer;    //Máxima cantidad de archivos recientes
     //paneles con información del estado del editor
@@ -111,7 +114,7 @@ type
     procedure SetText(AValue: string);
   public
     NomArc  : string;    //nombre del archivo
-    DelArc  : TDelArc;   //Tipo de delimitador de fin de línea
+    DelArc  : TLineEnd;   //Tipo de delimitador de fin de línea
     CodArc  : string;    //codificación de archivo
     linErr  : integer;   //línea de error. SOlo usada para marcar un error
     Error   : string;    //mensaje de error en alguna operación
@@ -140,7 +143,8 @@ type
     function OpenDialog(OpenDialog1: TOpenDialog): boolean;
     function SaveAsDialog(SaveDialog1: TSaveDialog): boolean;
     function SaveQuery: boolean;
-    procedure ChangeEndLineDelim(nueFor: TDelArc);
+    procedure ChangeEndLineDelim(nueFor: TLineEnd);
+    procedure InitMenuLineEnding(menLineEnd: TMenuItem);
     procedure CambiaCodific(nueCod: string);
     //Espejo de funciones comunes del editor
     procedure Cut;
@@ -183,12 +187,11 @@ type
 procedure InicEditorC1(ed: TSynEdit);
 procedure StringToFile(const s: string; const FileName: string);
 function StringFromFile(const FileName: string): string;
-procedure VerTipoArchivo(archivo: string; var Formato: TDelArc; var Codificacion: string);
-function Descrip_DelArc(DelArc: TDelArc): string;
+procedure VerTipoArchivo(archivo: string; var Formato: TLineEnd; var Codificacion: string);
 function CargarArchivoLin(arc8: string; Lineas: TStrings;
-                           var TipArc: TDelArc; var CodArc: string): string;
+                           var TipArc: TLineEnd; var CodArc: string): string;
 function GuardarArchivoLin(arc0: string; Lineas: TStrings;
-                           var TipArc: TDelArc; var CodArc: string): string;
+                           var TipArc: TLineEnd; var CodArc: string): string;
 procedure InsertaColumnasBloque(ed: TsynEdit; var key: TUTF8Char);
 
 implementation
@@ -245,7 +248,7 @@ begin
     FreeAndNil(FileStream);
   end; // try
 end;
-procedure VerTipoArchivo(archivo: string; var Formato: TDelArc; var Codificacion: string);
+procedure VerTipoArchivo(archivo: string; var Formato: TLineEnd; var Codificacion: string);
 (*Obtiene el tipo de delimitador de línea (Line Ending) de un archivo de texto, explorando
  los primeros bytes de archivo. Solo explora los primeros 8K del archivo.
  Si no encuentra un salto de línea en ese tamaño, no podrá deetrminar de que tipo de
@@ -289,18 +292,30 @@ begin
    Codificacion := GuessEncoding(Pbolsa);  //analiza los primeros bytes
 { TODO : Ver por qué no detectó correctaente la carga de un archivo UTF-8 sin BOM }
 end;
-function Descrip_DelArc(DelArc: TDelArc): string;
+function LineEnd_To_Str(delim: TLineEnd): string;
 //proporciona una descripción al tipo de delimitador
 begin
-  case DelArc of
+  Result := 'Unknown'; //'Desconoc.';
+  case delim of
     TAR_DOS : Result := 'DOS/Win';  //DOS/Windows
     TAR_UNIX: Result := 'UNIX/Linux';
     TAR_MAC : Result := 'MAC OS';
     TAR_DESC: Result := 'Unknown'; //'Desconoc.';
   end;
 end;
+function Str_To_LineEnd(str: string): TLineEnd;
+//proporciona una descripción al tipo de delimitador
+begin
+  Result := TAR_DESC;
+  case str of
+    'DOS/Win'   : Result := TAR_DOS;
+    'UNIX/Linux': Result := TAR_UNIX;
+    'MAC OS'    : Result := TAR_MAC;
+    'Unknown'   : Result := TAR_DESC;
+  end;
+end;
 function CargarArchivoLin(arc8: string; Lineas: TStrings;
-                           var TipArc: TDelArc; var CodArc: string): string;
+                           var TipArc: TLineEnd; var CodArc: string): string;
 {Carga el contenido de un archivo en un "TStrings". Si la codificación es diferente de
  UTF-8, hace la conversión. Esta pensado para usarse en un SynEdit.
  Además actualiza el Tipo de Delimitador de línea y la Codificación.
@@ -330,7 +345,7 @@ begin
   end;
 end;
 function GuardarArchivoLin(arc0: string; Lineas: TStrings;
-                           var TipArc: TDelArc; var CodArc: string): string;
+                           var TipArc: TLineEnd; var CodArc: string): string;
 {Guarda el contenido de un "TStrings" en un archivo. Si la codificación es diferente de
  UTF-8, hace la conversión. Esta pensado para usarse en un SynEdit.
  Además usa el Tipo de Delimitador de línea para guardar el archivo.
@@ -740,7 +755,7 @@ begin
   if fPanForEndLin=AValue then Exit;
   fPanForEndLin:=AValue;
   if fPanForEndLin <> nil then begin
-    fPanForEndLin.Text:=Descrip_DelArc(DelArc);
+    fPanForEndLin.Text:=LineEnd_To_Str(DelArc);
   end;
 end;
 procedure TSynFacilEditor.SetPanCodifFile(AValue: TStatusPanel);
@@ -769,7 +784,7 @@ begin
     fPanFileName.Text := SysToUTF8(NomArc);
   end;
   if fPanForEndLin <> nil then begin
-    fPanForEndLin.Text:=Descrip_DelArc(DelArc);
+    fPanForEndLin.Text:=LineEnd_To_Str(DelArc);
   end;
   if fPanCodifFile <> nil then begin
     fPanCodifFile.Text:=CodArc;
@@ -911,7 +926,7 @@ begin
     end;
   end;
 end;
-procedure TSynFacilEditor.ChangeEndLineDelim(nueFor: TDelArc);
+procedure TSynFacilEditor.ChangeEndLineDelim(nueFor: TLineEnd);
 //Cambia el formato de salto de línea del contenido
 begin
   if DelArc <> nueFor then begin  //verifica si hay cambio
@@ -920,6 +935,49 @@ begin
     ChangeFileInform;   //actualiza
   end;
 end;
+procedure TSynFacilEditor.InitMenuLineEnding(menLineEnd: TMenuItem);
+//Inicia un menú con los tipos de delimitador de línea que maneja la unidad, y les
+//les asigna un evento para implementar el cambio.
+var it: TMenuItem;
+  Hay: Boolean;
+  SR : TSearchRec;
+begin
+  if menLineEnd = nil then exit;
+  //configura menú
+  menLineEnd.Caption:= 'Fin de Línea';
+  menLineEnd.Clear;
+  //llena opciones
+
+  it := TMenuItem.Create(nil);
+  it.Caption:= LineEnd_To_Str(TAR_UNIX);  //nombre
+  it.OnClick:=@itClick;
+  menLineEnd.Add(it);
+
+  it := TMenuItem.Create(nil);
+  it.Caption:= LineEnd_To_Str(TAR_DOS);  //nombre
+  it.OnClick:=@itClick;
+  menLineEnd.Add(it);
+
+  it := TMenuItem.Create(nil);
+  it.Caption:= LineEnd_To_Str(TAR_MAC);  //nombre
+  it.OnClick:=@itClick;
+  menLineEnd.Add(it);
+
+  it := TMenuItem.Create(nil);
+  it.Caption:= LineEnd_To_Str(TAR_DESC);  //nombre
+  it.OnClick:=@itClick;
+  menLineEnd.Add(it);
+end;
+procedure TSynFacilEditor.itClick(Sender: TObject);
+var
+  it: TMenuItem;
+  delim: TLineEnd;
+begin
+  it := TMenuItem(Sender);
+  delim := Str_To_LineEnd(it.Caption);
+  ChangeEndLineDelim(delim);
+end;
+
 procedure TSynFacilEditor.CambiaCodific(nueCod: string);
 //Cambia la codificación del archivo
 begin
