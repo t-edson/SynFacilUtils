@@ -18,9 +18,11 @@ Para usar la librería, se debe incluir obligatoriamente un control TSynEdit (el
 
 La librería requiere los siguientes archivos:
 
-* SynFacilHighlighter.pas -> Es el resaltador de sintaxis que usa SynFacilCompletion. Debe ser de la versión 0.9.1 o superior.
+* MisUtils.pas -> Librería de utilidades para trabajar con Lazarus (Ver https://github.com/t-edson/MisUtils).
 
-* SynFacilCompletion -> Donde se define el resaltador con autocompletado. Se espera que todos los editores, usados por 'SynFacilUtils', usen este resaltdor por defecto.
+* SynFacilHighlighter.pas -> Es el resaltador de sintaxis que usa SynFacilCompletion. Debe ser de la versión 0.9.2 o superior (Ver https://github.com/t-edson/SynFacilSyn).
+
+* SynFacilCompletion -> Donde se define el resaltador con autocompletado. Se espera que todos los editores, usados por 'SynFacilUtils', usen este resaltdor por defecto (Ver https://github.com/t-edson/SynFacilCompletion).
 
 * SynFacilUtils.pas -> Es la librería donde se define el objeto 'TSynFacilEditor' que es el objeto principal de trabajo. Incluye además utilidades para la implementación de editores de texto.
 
@@ -117,3 +119,15 @@ La librería toma el control de los  eventos OnChange(), OnStatusChange(), OnMou
 Si se necesita usar los eventos OnChange(), OnMouseDown(), OnKeyDown(), OnKeyUp() u OnKeyPress(), se debe usar sus equivalentes en TSynFacilEditor.
 
 Para un ejemplo más completo de uso, ver los proyecto de muestra adjuntos.
+
+#Accesorios
+
+Adicionalmente se incluye el formulario 'FormSelFuente.pas', que es un diálogo que permite seleccionar tres opciones:
+
+- Todo el texto
+- Selección
+- Línea Actual
+
+Este formulario es útil cuando se quiere realizar tareas sobre el contenido del editor, con la posibilidad de elegir el alcance de la tarea.
+
+

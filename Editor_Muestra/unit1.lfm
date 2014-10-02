@@ -12,7 +12,7 @@ object Form1: TForm1
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnDropFiles = FormDropFiles
-  LCLVersion = '1.2.0.3'
+  LCLVersion = '1.2.4.0'
   inline SynEdit1: TSynEdit
     Left = 0
     Height = 256
@@ -452,6 +452,7 @@ object Form1: TForm1
         ShortCut = 57379
       end>
     MouseActions = <>
+    MouseTextActions = <>
     MouseSelActions = <>
     Lines.Strings = (
       'SynEdit1'
@@ -557,23 +558,31 @@ object Form1: TForm1
     TabOrder = 2
     object ToolButton1: TToolButton
       Left = 1
+      Hint = 'Nuevo Archivo'
       Top = 2
-      Action = acArcNuevo
+      Caption = '&Nuevo'
+      ImageIndex = 13
     end
     object ToolButton2: TToolButton
       Left = 24
+      Hint = 'Abrir Archivo'
       Top = 2
-      Action = acArcAbrir
+      Caption = '&Abrir...'
+      ImageIndex = 9
     end
     object ToolButton3: TToolButton
       Left = 47
+      Hint = 'Guardar Archivo'
       Top = 2
-      Action = acArcGuardar
+      Caption = '&Guardar'
+      ImageIndex = 6
     end
     object ToolButton4: TToolButton
       Left = 70
+      Hint = 'Guardar como...'
       Top = 2
-      Action = acArcGuaCom
+      Caption = 'G&uardar Como...'
+      ImageIndex = 12
     end
     object ToolButton5: TToolButton
       Left = 93
@@ -584,28 +593,38 @@ object Form1: TForm1
     end
     object ToolButton6: TToolButton
       Left = 103
+      Hint = 'Deshacer'
       Top = 2
-      Action = acEdiUndo
+      Caption = '&Deshacer'
+      ImageIndex = 1
     end
     object ToolButton7: TToolButton
       Left = 126
+      Hint = 'Rehacer'
       Top = 2
-      Action = acEdiRedo
+      Caption = '&Rehacer'
+      ImageIndex = 2
     end
     object ToolButton8: TToolButton
       Left = 149
+      Hint = 'Cortar'
       Top = 2
-      Action = acEdiCut
+      Caption = 'Cor&tar'
+      ImageIndex = 3
     end
     object ToolButton9: TToolButton
       Left = 172
+      Hint = 'Copiar'
       Top = 2
-      Action = acEdiCopy
+      Caption = '&Copiar'
+      ImageIndex = 10
     end
     object ToolButton10: TToolButton
       Left = 195
+      Hint = 'Pegar'
       Top = 2
-      Action = acEdiPaste
+      Caption = '&Pegar'
+      ImageIndex = 11
     end
   end
   object OpenDialog1: TOpenDialog
@@ -615,133 +634,6 @@ object Form1: TForm1
   object SaveDialog1: TSaveDialog
     left = 200
     top = 32
-  end
-  object ActionList: TActionList
-    Images = ImageList1
-    left = 196
-    top = 76
-    object acArcNuevo: TAction
-      Category = 'Arc'
-      Caption = '&Nuevo'
-      Hint = 'Nuevo Archivo'
-      ImageIndex = 13
-      OnExecute = acArcNuevoExecute
-    end
-    object acArcAbrir: TAction
-      Category = 'Arc'
-      Caption = '&Abrir...'
-      Hint = 'Abrir Archivo'
-      ImageIndex = 9
-      OnExecute = acArcAbrirExecute
-      ShortCut = 16449
-    end
-    object acArcGuardar: TAction
-      Category = 'Arc'
-      Caption = '&Guardar'
-      Hint = 'Guardar Archivo'
-      ImageIndex = 6
-      OnExecute = acArcGuardarExecute
-      ShortCut = 16455
-    end
-    object acArcGuaCom: TAction
-      Category = 'Arc'
-      Caption = 'G&uardar Como...'
-      Hint = 'Guardar como...'
-      ImageIndex = 12
-      OnExecute = acArcGuaComExecute
-    end
-    object acArcSalir: TAction
-      Category = 'Arc'
-      Caption = '&Salir'
-      Hint = 'Salir'
-      ImageIndex = 7
-      OnExecute = acArcSalirExecute
-    end
-    object acEdiUndo: TAction
-      Category = 'Edit'
-      Caption = '&Deshacer'
-      Hint = 'Deshacer'
-      ImageIndex = 1
-      OnExecute = acEdiUndoExecute
-      ShortCut = 16474
-    end
-    object acEdiRedo: TAction
-      Category = 'Edit'
-      Caption = '&Rehacer'
-      Hint = 'Rehacer'
-      ImageIndex = 2
-      OnExecute = acEdiRedoExecute
-      ShortCut = 24666
-    end
-    object acEdiCut: TEditCut
-      Category = 'Edit'
-      Caption = 'Cor&tar'
-      Hint = 'Cortar'
-      ImageIndex = 3
-      ShortCut = 16472
-    end
-    object acEdiCopy: TEditCopy
-      Category = 'Edit'
-      Caption = '&Copiar'
-      Hint = 'Copiar'
-      ImageIndex = 10
-      ShortCut = 16451
-    end
-    object acEdiPaste: TEditPaste
-      Category = 'Edit'
-      Caption = '&Pegar'
-      Hint = 'Pegar'
-      ImageIndex = 11
-      ShortCut = 16470
-    end
-    object acEdiSelecAll: TAction
-      Category = 'Edit'
-      Caption = 'Seleccionar &Todo'
-      Hint = 'Selecciona todo el texto'
-      OnExecute = acEdiSelecAllExecute
-      ShortCut = 16453
-    end
-    object acEdiModCol: TAction
-      Category = 'Edit'
-      Caption = 'Modo Columna'
-      Hint = 'Entra al modo columna'
-      ImageIndex = 15
-    end
-    object acVerNumLin: TAction
-      Category = 'Ver'
-      Caption = 'Ver &Núm. de Línea'
-    end
-    object acVerBarEst: TAction
-      Category = 'Ver'
-      Caption = 'Ver Barra de &Estado'
-    end
-    object acBusBuscar: TAction
-      Category = 'Search'
-      Caption = 'Buscar...'
-      ImageIndex = 17
-      ShortCut = 16450
-    end
-    object acBusBusSig: TAction
-      Category = 'Search'
-      Caption = 'Buscar &Siguiente'
-      ImageIndex = 18
-      ShortCut = 114
-    end
-    object acBusRem: TAction
-      Category = 'Search'
-      Caption = '&Remplazar...'
-      ShortCut = 16466
-    end
-    object acVerPanArc: TAction
-      Category = 'Ver'
-      Caption = 'Panel de &Archivos'
-      ShortCut = 113
-    end
-    object AcHerConfig: TAction
-      Category = 'Her'
-      Caption = 'AcHerConfig'
-      ImageIndex = 16
-    end
   end
   object ImageList1: TImageList
     left = 132
@@ -1614,11 +1506,135 @@ object Form1: TForm1
       E2FFFFFFFF00FFFFFF00FFFFFF00
     }
   end
+  object ActionList: TActionList
+    Images = ImageList1
+    left = 192
+    top = 80
+    object acArcNuevo: TAction
+      Category = 'Arc'
+      Caption = '&Nuevo'
+      Hint = 'Nuevo Archivo'
+      ImageIndex = 13
+      OnExecute = acArcNuevoExecute
+    end
+    object acArcAbrir: TAction
+      Category = 'Arc'
+      Caption = '&Abrir...'
+      Hint = 'Abrir Archivo'
+      ImageIndex = 9
+      OnExecute = acArcAbrirExecute
+      ShortCut = 16449
+    end
+    object acArcGuardar: TAction
+      Category = 'Arc'
+      Caption = '&Guardar'
+      Hint = 'Guardar Archivo'
+      ImageIndex = 6
+      OnExecute = acArcGuardarExecute
+      ShortCut = 16455
+    end
+    object acArcGuaCom: TAction
+      Category = 'Arc'
+      Caption = 'G&uardar Como...'
+      Hint = 'Guardar como...'
+      ImageIndex = 12
+      OnExecute = acArcGuaComExecute
+    end
+    object acArcSalir: TAction
+      Category = 'Arc'
+      Caption = '&Salir'
+      Hint = 'Salir'
+      ImageIndex = 7
+      OnExecute = acArcSalirExecute
+    end
+    object acEdUndo: TAction
+      Category = 'Edit'
+      Caption = '&Deshacer'
+      Hint = 'Deshacer'
+      ImageIndex = 1
+      ShortCut = 16474
+    end
+    object acEdRedo: TAction
+      Category = 'Edit'
+      Caption = '&Rehacer'
+      Hint = 'Rehacer'
+      ImageIndex = 2
+      ShortCut = 24666
+    end
+    object acEdCut: TEditCut
+      Category = 'Edit'
+      Caption = 'Cor&tar'
+      Hint = 'Cortar'
+      ImageIndex = 3
+      ShortCut = 16472
+    end
+    object acEdCopy: TEditCopy
+      Category = 'Edit'
+      Caption = '&Copiar'
+      Hint = 'Copiar'
+      ImageIndex = 10
+      ShortCut = 16451
+    end
+    object acEdPaste: TEditPaste
+      Category = 'Edit'
+      Caption = '&Pegar'
+      Hint = 'Pegar'
+      ImageIndex = 11
+      ShortCut = 16470
+    end
+    object acEdSelecAll: TAction
+      Category = 'Edit'
+      Caption = 'Seleccionar &Todo'
+      Hint = 'Selecciona todo el texto'
+      ShortCut = 16453
+    end
+    object acEdModCol: TAction
+      Category = 'Edit'
+      Caption = 'Modo Columna'
+      Hint = 'Entra al modo columna'
+      ImageIndex = 15
+    end
+    object acVerNumLin: TAction
+      Category = 'Ver'
+      Caption = 'Ver &Núm. de Línea'
+    end
+    object acVerBarEst: TAction
+      Category = 'Ver'
+      Caption = 'Ver Barra de &Estado'
+    end
+    object acBusBuscar: TAction
+      Category = 'Search'
+      Caption = 'Buscar...'
+      ImageIndex = 17
+      ShortCut = 16450
+    end
+    object acBusBusSig: TAction
+      Category = 'Search'
+      Caption = 'Buscar &Siguiente'
+      ImageIndex = 18
+      ShortCut = 114
+    end
+    object acBusReemp: TAction
+      Category = 'Search'
+      Caption = '&Remplazar...'
+      ShortCut = 16466
+    end
+    object acVerPanArc: TAction
+      Category = 'Ver'
+      Caption = 'Panel de &Archivos'
+      ShortCut = 113
+    end
+    object AcHerConfig: TAction
+      Category = 'Her'
+      Caption = 'AcHerConfig'
+      ImageIndex = 16
+    end
+  end
   object MainMenu1: TMainMenu
     Images = ImageList1
-    left = 68
-    top = 76
-    object MenuItem1: TMenuItem
+    left = 64
+    top = 80
+    object mnArchivo: TMenuItem
       Caption = '&Archivo'
       object MenuItem3: TMenuItem
         Action = acArcNuevo
@@ -1822,10 +1838,10 @@ object Form1: TForm1
         }
       end
     end
-    object MenuItem2: TMenuItem
+    object mnEdicion: TMenuItem
       Caption = '&Edicion'
       object MenuItem9: TMenuItem
-        Action = acEdiUndo
+        Action = acEdUndo
         Bitmap.Data = {
           36040000424D3604000000000000360000002800000010000000100000000100
           2000000000000004000064000000640000000000000000000000FFFFFF00FFFF
@@ -1864,7 +1880,7 @@ object Form1: TForm1
         }
       end
       object MenuItem11: TMenuItem
-        Action = acEdiRedo
+        Action = acEdRedo
         Bitmap.Data = {
           36040000424D3604000000000000360000002800000010000000100000000100
           2000000000000004000064000000640000000000000000000000FFFFFF00FFFF
@@ -1906,7 +1922,7 @@ object Form1: TForm1
         Caption = '-'
       end
       object MenuItem12: TMenuItem
-        Action = acEdiCut
+        Action = acEdCut
         Bitmap.Data = {
           36040000424D3604000000000000360000002800000010000000100000000100
           2000000000000004000064000000640000000000000000000000FFFFFF00FFFF
@@ -1945,7 +1961,7 @@ object Form1: TForm1
         }
       end
       object MenuItem13: TMenuItem
-        Action = acEdiCopy
+        Action = acEdCopy
         Bitmap.Data = {
           36040000424D3604000000000000360000002800000010000000100000000100
           2000000000000004000064000000640000000000000000000000FFFFFF00FFFF
@@ -1984,7 +2000,7 @@ object Form1: TForm1
         }
       end
       object MenuItem14: TMenuItem
-        Action = acEdiPaste
+        Action = acEdPaste
         Bitmap.Data = {
           36040000424D3604000000000000360000002800000010000000100000000100
           2000000000000004000064000000640000000000000000000000FFFFFF00FFFF
@@ -2026,13 +2042,97 @@ object Form1: TForm1
         Caption = '-'
       end
       object MenuItem16: TMenuItem
-        Action = acEdiSelecAll
+        Action = acEdSelecAll
+      end
+    end
+    object mnBuscar: TMenuItem
+      Caption = '&Buscar'
+      object MenuItem1: TMenuItem
+        Action = acBusBuscar
+        Bitmap.Data = {
+          36040000424D3604000000000000360000002800000010000000100000000100
+          2000000000000004000064000000640000000000000000000000FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00145D9503105A921AFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF0022669E061B629AAD22679DFF115B9387FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF003272
+          AA062B6DA5AD558DBCFF89B5DDFF185F97FFFFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00447FB7063C79
+          B1AD6497C5FF9DC1E4FF6699C7FF1F659DEBFFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00DDB28F02D9AE8A97D6A985E3D3A57FFDD0A07BFDCD9C76E4A2938ADE75A2
+          CCFFABCBE8FF76A4CEFF3070A8EB286BA327FFFFFF00FFFFFF00FFFFFF00E4BD
+          9B02E1B896C0E8C9AEFFF5E1CDFFF7E5D3FFF7E5D1FFF3DDC8FFDFBA9CFFC7A8
+          91FF86AED5FF417DB5EB3977AF27FFFFFF00FFFFFF00FFFFFF00FFFFFF00E8C3
+          A297EDD0B7FFF8E8D9FFF5DEC8FFF3D8BDFFF3D6BBFFF4DBC2FFF7E4D2FFDFBB
+          9DFF9D9492F74B84BC27FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00ECC8
+          A8E3F7E7D7FFF6E1CCFFF4DBC2FFF4DAC0FFF3D8BDFFF3D7BBFFF4DBC2FFF3DE
+          C9FFCD9F7BE7FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00F0CE
+          AEFDF9ECDFFFF5DFC8FFF5DDC6FFF4DCC3FFF4DAC1FFF3D9BEFFF3D7BDFFF8E6
+          D3FFD3A57FFDFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00F4D3
+          B4FDF9EDE1FFF6E1CCFFF5DFC9FFF5DEC7FFF4DCC4FFF4DBC2FFF4DAC0FFF8E7
+          D6FFD7AA86FDFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00F7D7
+          B9E3F9EBDEFFF7E7D6FFF6E1CCFFF5E0CAFFF5DEC8FFF5DDC5FFF6E1CBFFF5E2
+          D0FFDBB08CE3FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FADB
+          BD97F8E2CCFFFAEEE3FFF7E7D6FFF6E2CEFFF6E1CBFFF6E3D0FFF9EADDFFECCF
+          B5FFDFB69397FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FCDE
+          C002FADBBEC0F9E2CDFFFAECDEFFF9EEE2FFF9EDE2FFF8E9DAFFF0D5BDFFE7C0
+          9FC0E3BC9A02FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FCDEC102FADCBF97F9D9BBE3F6D6B8FDF4D3B4FDF1CFAFE3EECBAB97EBC6
+          A602FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
+        }
+      end
+      object MenuItem2: TMenuItem
+        Action = acBusBusSig
+        Bitmap.Data = {
+          36040000424D3604000000000000360000002800000010000000100000000100
+          2000000000000004000064000000640000000000000000000000FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF008254
+          249F764919E1714415E1825424BAFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00875A29FF8254
+          24FF936839FF906536FF724516FF6D4011FF693C0DFF65380AFF613406FF5E31
+          03FF5B2E01FF5A2D001EFFFFFF00FFFFFF00FFFFFF00FFFFFF00B38B5DFFB38B
+          5DFF7D5121FF794C1DFFB38B5DFFB38B5DFFB38B5DFFB38B5DFFB38B5DFFB38B
+          5DFF683C0EFF5B2E011EFFFFFF00FFFFFF00FFFFFF00FFFFFF00875A29FF8254
+          24FFAB9074FFAA8F73FF724516FF6D4011FF693C0DFF65380AFF613406FF5E31
+          03FF6C3F12FF5F32041EFFFFFF00FFFFFF00FFFFFF00FFFFFF00F8F8F8FFF1F1
+          F1FFE3E3E3FFF3F3F3FFF8F8F8FFF9F9F9FFF8F8F8FFE9E9E9FFF8F8F8FF6235
+          07FF704416FF6336081E216324B81D5E2006FFFFFF00FFFFFF00E7E7E7FFD3D3
+          D3FFA5A5A5FFD7D7D7FFF4F4F4FFEEEEEEFFEAEAEAFFDCDCDCFFF8F8F8FF6639
+          0BFF74481AFF3C61254F256929F7216324D9FFFFFF00FFFFFF00C5C5C5FFD3D3
+          D3FFA6A6A6FFD8D8D8FFF4F4F4FF61BE6DFF5DB868FF58B162FF53A95CFF4DA1
+          56FF47994FFF419149FF59A15EFF448B49FF216324CFFFFFFF00E9E9E9FFD4D4
+          D4FFA6A6A6FFD8D8D8FFF5F5F5FF65C371FFA0D7A9FF9CD5A5FF98D3A1FF94D0
+          9DFF90CE98FF8BCB93FF7AC180FF76BE7CFF458C4AFF216324C4C5C5C5FFD4D4
+          D4FFA7A7A7FFD8D8D8FFF5F5F5FF68C774FFA5DAAEFFA2D8ABFF9ED6A7FF9AD4
+          A3FF96D29FFF93CF9AFF81C587FF7DC282FF4A9150FF256929C9EAEAEAFFD5D5
+          D5FFB5B5B5FFDFDFDFFFF5F5F5FF68C774FF68C774FF65C371FF61BE6DFF5DB8
+          68FF58B162FF53A95CFF5AA362FF559D5CFF2F7835D1FFFFFF00C6C6C6FFF2F2
+          F2FFDDD8D2FFEBE5DFFFFCFCFCFFCCCCCCFFC9C9C9FFBDBDBDFFF9F9F9FF8457
+          26FF916333FF8659281E419149F73B8842DBFFFFFF00FFFFFF00F8F8F8FFD9C6
+          B1FFB1834EE6AC7E4AE6D7C4AFFFF9F9F9FFF9F9F9FFF9F9F9FFF9F9F9FF8B5D
+          2CFF976938FF8D602E1E47994FBB41914906FFFFFF00FFFFFF00CBA67BFFC6A0
+          74FF9264336791633167BB956AFFB8946AFFB49066FFAF8B62FFAB875EFF9264
+          32FF996C393394663406FFFFFF00FFFFFF00FFFFFF00FFFFFF00C3955F33C092
+          5C33FFFFFF00FFFFFF00B3855033AE804C33A97B4733A37642339E703D33986B
+          3833FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
+          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00
+        }
+      end
+      object MenuItem17: TMenuItem
+        Action = acBusReemp
       end
     end
     object mnLenguajes: TMenuItem
       Caption = '&Lenguajes'
     end
-    object MenuItem17: TMenuItem
+    object mnHerram: TMenuItem
       Caption = '&Herramientas'
       object MenuItem23: TMenuItem
         Caption = '&Configuración'

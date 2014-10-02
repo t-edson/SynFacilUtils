@@ -28,6 +28,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
+            <OtherUnitFiles Value="..;..\..\SynFacilSyn9.3b;..\..\SynFacilCompletion0.7b;..\..\MisUtils 0.1b"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -96,7 +97,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="..;..\..\SynFacilSyn9.3b;..\..\SynFacilCompletion0.6"/>
+      <OtherUnitFiles Value="..;..\..\SynFacilSyn9.3b;..\..\SynFacilCompletion0.7b;..\..\MisUtils 0.1b"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

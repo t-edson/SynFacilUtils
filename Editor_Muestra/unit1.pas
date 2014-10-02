@@ -22,16 +22,18 @@ type
     acArcSalir: TAction;
     acBusBuscar: TAction;
     acBusBusSig: TAction;
-    acBusRem: TAction;
-    acEdiCopy: TEditCopy;
-    acEdiCut: TEditCut;
-    acEdiModCol: TAction;
-    acEdiPaste: TEditPaste;
-    acEdiRedo: TAction;
-    acEdiSelecAll: TAction;
-    acEdiUndo: TAction;
+    acBusReemp: TAction;
+    acEdCopy: TEditCopy;
+    acEdCut: TEditCut;
+    acEdModCol: TAction;
+    acEdPaste: TEditPaste;
+    acEdRedo: TAction;
+    acEdSelecAll: TAction;
+    acEdUndo: TAction;
     AcHerConfig: TAction;
     ActionList: TActionList;
+    acVerBarEst: TAction;
+    acVerNumLin: TAction;
     acVerPanArc: TAction;
     ImageList1: TImageList;
     MainMenu1: TMainMenu;
@@ -43,8 +45,6 @@ type
     MenuItem14: TMenuItem;
     MenuItem15: TMenuItem;
     MenuItem16: TMenuItem;
-    mnLenguajes: TMenuItem;
-    mnRecientes: TMenuItem;
     MenuItem17: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem23: TMenuItem;
@@ -55,6 +55,12 @@ type
     MenuItem7: TMenuItem;
     MenuItem8: TMenuItem;
     MenuItem9: TMenuItem;
+    mnArchivo: TMenuItem;
+    mnBuscar: TMenuItem;
+    mnEdicion: TMenuItem;
+    mnHerram: TMenuItem;
+    mnLenguajes: TMenuItem;
+    mnRecientes: TMenuItem;
     OpenDialog1: TOpenDialog;
     SaveDialog1: TSaveDialog;
     StatusBar1: TStatusBar;
@@ -70,8 +76,6 @@ type
     ToolButton7: TToolButton;
     ToolButton8: TToolButton;
     ToolButton9: TToolButton;
-    acVerBarEst: TAction;
-    acVerNumLin: TAction;
     procedure acArcAbrirExecute(Sender: TObject);
     procedure acArcGuaComExecute(Sender: TObject);
     procedure acArcGuardarExecute(Sender: TObject);
@@ -89,7 +93,7 @@ type
   private
     edit: TSynFacilEditor;
   public
-    { public declarations }
+    procedure SetLanguage(lang: string);
   end;
 
 var
@@ -103,6 +107,8 @@ implementation
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
+  SetLanguage('en');
+  edit.SetLanguage('en');
   edit := TSynFacilEditor.Create(SynEdit1, 'SinNombre', 'pas');
   edit.OnChangeEditorState:=@ChangeEditorState;
   edit.OnChangeFileInform:=@editChangeFileInform;
@@ -143,8 +149,8 @@ end;
 procedure TForm1.ChangeEditorState;
 begin
   acArcGuardar.Enabled:=edit.Modified;
-  acEdiUndo.Enabled:=edit.CanUndo;
-  acEdiRedo.Enabled:=edit.CanRedo;
+  acEdUndo.Enabled:=edit.CanUndo;
+  acEdRedo.Enabled:=edit.CanRedo;
   //Para estas acciones no es necesario controlarlas, porque son acciones pre-determinadas
 //  acEdiCortar.Enabled  := edit.canCopy;
 //  acEdiCopiar.Enabled := edit.canCopy;
@@ -198,6 +204,94 @@ end;
 procedure TForm1.acEdiSelecAllExecute(Sender: TObject);
 begin
   SynEdit1.SelectAll;
+end;
+
+procedure TForm1.SetLanguage(lang: string);
+begin
+  case lowerCase(lang) of
+  'es': begin
+      //menú principal
+      mnArchivo.Caption:='&Archivo';
+      mnEdicion.Caption:='&Edición';
+      mnBuscar.Caption:='&Buscar';
+      mnLenguajes.Caption:='&Lenguajes';
+      mnHerram.Caption:='&Herramientas';
+
+      acArcNuevo.Caption := '&Nuevo';
+      acArcNuevo.Hint := 'Nueva consulta';
+      acArcAbrir.Caption := '&Abrir...';
+      acArcAbrir.Hint := 'Abrir archivo';
+      acArcGuardar.Caption := '&Guardar';
+      acArcGuardar.Hint := 'Guardar archivo';
+      acArcGuaCom.Caption := 'G&uardar Como...';
+      acArcGuaCom.Hint := 'Guardar como';
+      acArcSalir.Caption := '&Salir';
+      acArcSalir.Hint := 'Cerrar el programa';
+      acEdUndo.Caption := '&Deshacer';
+      acEdUndo.Hint := 'Deshacer';
+      acEdRedo.Caption := '&Rehacer';
+      acEdRedo.Hint := 'Reahacer';
+      acEdCut.Caption := 'Cor&tar';
+      acEdCut.Hint := 'Cortar';
+      acEdCopy.Caption := '&Copiar';
+      acEdCopy.Hint := 'Copiar';
+      acEdPaste.Caption := '&Pegar';
+      acEdPaste.Hint := 'Pegar';
+      acEdSelecAll.Caption := 'Seleccionar &Todo';
+      acEdSelecAll.Hint := 'Seleccionar todo';
+      acEdModCol.Caption := 'Modo Columna';
+      acEdModCol.Hint := 'Modo columna';
+      acBusBuscar.Caption := 'Buscar...';
+      acBusBuscar.Hint := 'Buscar texto';
+      acBusBusSig.Caption := 'Buscar &Siguiente';
+      acBusBusSig.Hint := 'Buscar Siguiente';
+      acBusReemp.Caption := '&Remplazar...';
+      acBusReemp.Hint := 'Reemplazar texto';
+      acHerConfig.Caption:='Configuración';
+      acHerConfig.Hint := 'Ver configuración';
+    end;
+  'en': begin
+      //menú principal
+      mnArchivo.Caption:='&File';
+      mnEdicion.Caption:='&Edit';
+      mnBuscar.Caption:='&Search';
+      mnLenguajes.Caption:='&Lenguages';
+      mnHerram.Caption:='&Tools';
+
+      acArcNuevo.Caption := '&New';
+      acArcNuevo.Hint := 'New query';
+      acArcAbrir.Caption := '&Open...';
+      acArcAbrir.Hint := 'Open file';
+      acArcGuardar.Caption := '&Save';
+      acArcGuardar.Hint := 'Save file';
+      acArcGuaCom.Caption := 'Sa&ve As ...';
+      acArcGuaCom.Hint := 'Save file as ...';
+      acArcSalir.Caption := '&Quit';
+      acArcSalir.Hint := 'Close the program';
+      acEdUndo.Caption := '&Undo';
+      acEdUndo.Hint := 'Undo';
+      acEdRedo.Caption := '&Redo';
+      acEdRedo.Hint := 'Redo';
+      acEdCut.Caption := 'C&ut';
+      acEdCut.Hint := 'Cut';
+      acEdCopy.Caption := '&Copy';
+      acEdCopy.Hint := 'Copy';
+      acEdPaste.Caption := '&Paste';
+      acEdPaste.Hint := 'Paste';
+      acEdSelecAll.Caption := 'Select &All';
+      acEdSelecAll.Hint := 'Select all';
+      acEdModCol.Caption := 'Column mode';
+      acEdModCol.Hint := 'Column mode';
+      acBusBuscar.Caption := 'Search...';
+      acBusBuscar.Hint := 'Search text';
+      acBusBusSig.Caption := 'Search &Next';
+      acBusBusSig.Hint := 'Search Next';
+      acBusReemp.Caption := '&Replace...';
+      acBusReemp.Hint := 'Replace text';
+      acHerConfig.Caption := '&Settings';
+      acHerConfig.Hint := 'Configuration dialog';
+    end;
+  end;
 end;
 
 end.
