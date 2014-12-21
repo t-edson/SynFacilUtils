@@ -28,7 +28,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="..;..\..\MisUtils 0.1b;..\..\SynFacilCompletion0.7b;..\..\SynFacilSyn9.3b"/>
+            <OtherUnitFiles Value="..;..\..\MisUtils 0.1;..\..\SynFacilCompletion0.7;..\..\SynFacilSyn 09.5"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>

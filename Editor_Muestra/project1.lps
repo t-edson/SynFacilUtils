@@ -12,7 +12,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
         <CursorPos X="1" Y="20"/>
-        <UsageCount Value="97"/>
+        <UsageCount Value="98"/>
       </Unit0>
       <Unit1>
         <Filename Value="unit1.pas"/>
@@ -21,12 +21,11 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Unit1"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="0"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="102"/>
-        <CursorPos X="23" Y="111"/>
-        <UsageCount Value="97"/>
+        <TopLine Value="105"/>
+        <CursorPos X="24" Y="122"/>
+        <UsageCount Value="98"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit1>
@@ -88,10 +87,11 @@
       <Unit8>
         <Filename Value="..\SynFacilUtils.pas"/>
         <UnitName Value="SynFacilUtils"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="1272"/>
-        <CursorPos X="1" Y="1281"/>
+        <TopLine Value="1"/>
+        <CursorPos X="25" Y="6"/>
         <UsageCount Value="37"/>
         <Bookmarks Count="1">
           <Item0 X="1" Y="569" ID="2"/>

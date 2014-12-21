@@ -1,4 +1,4 @@
-SynFacilUtils 0.2
+SynFacilUtils 0.3
 =================
 
 Librería para implementación de las funcionalidades típicas de un editor de texto usando el componente SynEdit. Está basado en la librería 'UtilEditSyn' y en el resaltador 'SynFacilCompletion'.
@@ -7,20 +7,19 @@ Incluye funciones para el manejo de los formatos de salto de línea más comunes
 
 Permite la implementación Sencilla de las funciones de Apertura, Cierre, Nuevo archivo, etc.
 
-Maneja las verificaciones de existencia de archivo, o archivo modificado, mostrando los
-diálogos apropiados, en cada caso. También incluye un modo de edición por columna (no implementado del todo).
+Maneja las verificaciones de existencia de archivo, o archivo modificado, mostrando los diálogos apropiados, en cada caso. También incluye un modo de edición por columna (no implementado del todo).
 
 Puede manejar diversos mensajes de estado del editor, usando una barra de estado.
 
 También permite guardar un histórico de los archivos abiertos recientemente.
 
-Para usar la librería, se debe incluir obligatoriamente un control TSynEdit (el paquete SynEdit para ser estcritos) y opcionalmente los diálogos TOpenDialog y TSaveDialog, si se desea utilizar las funcionalidades de apertura y grabado de archivos.
+Para usar la librería, se debe incluir obligatoriamente un control TSynEdit (el paquete SynEdit para ser estrictos) y opcionalmente los diálogos TOpenDialog y TSaveDialog, si se desea utilizar las funcionalidades de apertura y grabado de archivos.
 
 La librería requiere los siguientes archivos:
 
 * MisUtils.pas -> Librería de utilidades para trabajar con Lazarus (Ver https://github.com/t-edson/MisUtils).
 
-* SynFacilHighlighter.pas -> Es el resaltador de sintaxis que usa SynFacilCompletion. Debe ser de la versión 0.9.2 o superior (Ver https://github.com/t-edson/SynFacilSyn).
+* SynFacilHighlighter.pas -> Es el resaltador de sintaxis que usa SynFacilCompletion. Debe ser de la versión 0.9.5 (Ver https://github.com/t-edson/SynFacilSyn).
 
 * SynFacilCompletion -> Donde se define el resaltador con autocompletado. Se espera que todos los editores, usados por 'SynFacilUtils', usen este resaltdor por defecto (Ver https://github.com/t-edson/SynFacilCompletion).
 

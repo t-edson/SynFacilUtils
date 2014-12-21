@@ -1,6 +1,6 @@
 {
-SynFacilUtils 0.3b
-==================
+SynFacilUtils 0.3
+=================
 Por Tito Hinostroza 29/09/2014
 * Se incluye la unidad MisUtils, para usar las funciones de idioma y la rutina de
 manejo de ítems de menú.
@@ -18,7 +18,7 @@ Descripción
 ===========
 Utilidades para la creación de editores con el resaltador SynFacilSyn.
 
-Trabaja con SynFacilCompletion 0.5 o superior
+Trabaja con SynFacilCompletion 0.7 o superior
 }
 unit SynFacilUtils; {$mode objfpc}{$H+}
 interface
@@ -69,6 +69,8 @@ type
     fPanFileName  : TStatusPanel;  //Panel para mostrar el nombre de archivo
     fPanForEndLin : TStatusPanel;  //Panel para mostrar el tipo de delimitador de línea
     fPanCodifFile : TStatusPanel;  //Panel para mostrar la codificaión de archivo
+    procedure ReplaceDialog1Find(Sender: TObject);
+    procedure ReplaceDialog1Replace(Sender: TObject);
 
     //Estado de modificación
     procedure SetModified(valor: boolean);
@@ -116,11 +118,10 @@ type
     procedure FindDialog;
     procedure FindNextWord(Sender: TObject);  //el método FindNext() ya existe
     procedure ReplaceDialog;
-    procedure ReplaceDialog1Find(Sender: TObject);
-    procedure ReplaceDialog1Replace(Sender: TObject);
     //herramientas
-    procedure TabToSpaces;
-    procedure TrimLines;
+    procedure TabToSpaces(fSelFuente: TfrmSelFuente);
+    procedure TrimLines(fSelFuente: TfrmSelFuente);
+    function FiltLines(fSelFuente: TfrmSelFuente; sal: TStringList): boolean;
     //Funciones para cambio de Fin de Línea y Codificación
     procedure ChangeEndLineDelim(nueFor: TLineEnd); //cambia Fin de línea
     procedure InitMenuLineEnding(mnLineEnding0: TMenuItem);  //configura menú
@@ -850,7 +851,7 @@ begin
   end;
 end;
 function TSynFacilEditor.OpenDialog(OpenDialog1: TOpenDialog): boolean;
-//Muestra el cuadro de diálogo para abrir un archivo, teniend cuidado de
+//Muestra el cuadro de diálogo para abrir un archivo, teniendo cuidado de
 //pedir confirmación para grabar el contenido actual.
 var arc0: string;
 begin
@@ -1002,25 +1003,27 @@ begin
   MsgBox('No se encuentra: %s', [buscado]);
 end;
 //herramientas
-procedure TSynFacilEditor.TabToSpaces;
+procedure TSynFacilEditor.TabToSpaces(fSelFuente: TfrmSelFuente);
+//Convierte tabulaciones a espacios.
+//Requiere un formaulario de tipo TfrmSelFuente para mostrar el dialogo.
 var
   i: integer;
 begin
   if ed.SelAvail then begin
-    frmSelFuente.optLin.Enabled:=false;
-    frmSelFuente.optSel.Enabled:=true;
-    frmSelFuente.optSel.Checked := true;
+    fSelFuente.optLin.Enabled:=false;
+    fSelFuente.optSel.Enabled:=true;
+    fSelFuente.optSel.Checked := true;
   end else begin
-    frmSelFuente.optSel.Enabled:=false;
-    frmSelFuente.optLin.Enabled := true;
-    frmSelFuente.optLin.Checked := true;
+    fSelFuente.optSel.Enabled:=false;
+    fSelFuente.optLin.Enabled := true;
+    fSelFuente.optLin.Checked := true;
   end;
-  frmSelFuente.ShowModal;
-  If frmSelFuente.cancelado Then begin  //se canceló
+  fSelFuente.ShowModal;
+  If fSelFuente.cancelado Then begin  //se canceló
     //no hace nada
-  end else If frmSelFuente.optLin.Checked Then begin  //línea
+  end else If fSelFuente.optLin.Checked Then begin  //línea
     ed.LineText:=StringReplace(ed.LineText,#9, stringOfChar(' ',ed.TabWidth), [rfReplaceAll]);
-  end else If frmSelFuente.optSel.Checked Then begin  //seleción
+  end else If fSelFuente.optSel.Checked Then begin  //seleción
     ed.SelText:=StringReplace(ed.seltext,#9, stringOfChar(' ',ed.TabWidth), [rfReplaceAll]);;
   end else begin                           //todo
     for i := 0 to ed.Lines.Count-1 do
@@ -1029,28 +1032,29 @@ begin
   ed.ClearUndo;   //porque no se puede deshacer
   if OnChangeEditorState<>nil then OnChangeEditorState;  //actualiza
 end;
-procedure TSynFacilEditor.TrimLines;
+procedure TSynFacilEditor.TrimLines(fSelFuente: TfrmSelFuente);
 //Quita espacios laterales
+//Requiere un formaulario de tipo TfrmSelFuente para mostrar el dialogo.
 var
   i: integer;
   f1: LONG;
   f2: LONG;
 begin
   if ed.SelAvail then begin
-    frmSelFuente.optLin.Enabled:=false;
-    frmSelFuente.optSel.Enabled:=true;
-    frmSelFuente.optSel.Checked := true;
+    fSelFuente.optLin.Enabled:=false;
+    fSelFuente.optSel.Enabled:=true;
+    fSelFuente.optSel.Checked := true;
   end else begin
-    frmSelFuente.optSel.Enabled:=false;
-    frmSelFuente.optLin.Enabled := true;
-    frmSelFuente.optLin.Checked := true;
+    fSelFuente.optSel.Enabled:=false;
+    fSelFuente.optLin.Enabled := true;
+    fSelFuente.optLin.Checked := true;
   end;
-  frmSelFuente.ShowModal;
-  If frmSelFuente.cancelado Then begin  //se canceló
+  fSelFuente.ShowModal;
+  If fSelFuente.cancelado Then begin  //se canceló
     //no hace nada
-  end else If frmSelFuente.optLin.Checked Then begin  //línea
+  end else If fSelFuente.optLin.Checked Then begin  //línea
     ed.LineText:=trim(ed.LineText);
-  end else If frmSelFuente.optSel.Checked Then begin  //seleción
+  end else If fSelFuente.optSel.Checked Then begin  //seleción
     f1 := ed.BlockBegin.y;
     f2 := ed.BlockEnd.y;
     for i := f1 to f2-1 do
@@ -1061,6 +1065,40 @@ begin
   End;
   ed.ClearUndo;   //porque no se puede deshacer
   if OnChangeEditorState<>nil then OnChangeEditorState;  //actualiza
+end;
+function TSynFacilEditor.FiltLines(fSelFuente: TfrmSelFuente; sal: TStringList): boolean;
+//Filtra líneas del contenido. Si se cancela la operación devuelve false.
+var
+  i: integer;
+  s: string;
+begin
+  Result := true;  //por defecto
+  sal := TStringList.Create;  //salida
+  fSelFuente.optLin.Enabled:=false;
+  if ed.SelAvail and (ed.BlockEnd.y - ed.BlockBegin.y >0) then begin
+     //hay selección de más de una línea
+     fSelFuente.optSel.Enabled:=true;
+     fSelFuente.optSel.Checked := true;
+     fSelFuente.ShowModal;  //solo muestra aquí
+     If fSelFuente.cancelado Then exit;  //se canceló
+  end else begin  //no hay selección
+     fSelFuente.optTod.Checked := true;
+//      fSelFuente.ShowModal;
+  end;
+  If fSelFuente.optSel.Checked Then begin  //seleción
+    s := InputBox('Filtrar líneas:','Ingrese texto: ','');
+    if s = '' then exit;
+    for i:= ed.BlockBegin.y to ed.BlockEnd.y do
+      if AnsiContainsText(ed.Lines[i],s) then sal.Add(ed.Lines[i]);
+  end Else begin                           //todo
+    if ed.BlockEnd.y = ed.BlockBegin.y then  //hay texto seleccionado, suguiere
+      s := InputBox('Filtrar líneas:','Ingrese texto: ',ed.SelText)
+    else
+      s := InputBox('Filtrar líneas:','Ingrese texto: ','');
+    if s = '' then exit;
+    for i:= 0 to ed.Lines.Count-1 do
+      if AnsiContainsText(ed.Lines[i],s) then sal.Add(ed.Lines[i]);
+  End;
 end;
 
 //Funciones para cambio de Fin de Línea y Codificación
@@ -1225,9 +1263,6 @@ begin
 end;
 procedure TSynFacilEditor.LoadSyntaxFromFile(XMLfile: string);
 //Carga un archivo de sintaxis en el editor.
-var
-  XML: String;
-  i: Integer;
 begin
   hl.LoadFromFile(XMLfile);  //carga sintaxis
   if fPanLangName<> nil then begin
