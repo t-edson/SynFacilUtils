@@ -1,24 +1,14 @@
 {
-SynFacilUtils 0.3
-=================
-Por Tito Hinostroza 29/09/2014
-* Se incluye la unidad MisUtils, para usar las funciones de idioma y la rutina de
-manejo de ítems de menú.
-* Se incluye la unidad 'FormSelFuente' para poder consultar sobre el alcance de las
-operaciones.
-* Se agrega soporte para el idioma Inglés. Se eliminan las constantes de mensaje y se
-agrega el método SetLanguage().
-* Se cambia le nombre de algunos métodos a terminología inglesa.
-* Se agrega el manejo del menú de Codificación de archivo.
-* Se agregan funciones para Búsqueda/Reemplazo.
-* Se agregan funciones para maniplular el contenido (Tabulación a espacios.)
-* Se reordena el código.
+SynFacilUtils 0.4b
+==================
+Por Tito Hinostroza 19/12/2014
+* Se adapta para trabajar con la versión 1.0 de SynFacilSyn y de SynFaciLComplet.
 
 Descripción
 ===========
 Utilidades para la creación de editores con el resaltador SynFacilSyn.
 
-Trabaja con SynFacilCompletion 0.7 o superior
+Trabaja con SynFacilCompletion 1.0 o superior
 }
 unit SynFacilUtils; {$mode objfpc}{$H+}
 interface
@@ -1296,13 +1286,13 @@ begin
     CheckLanguageMenu(XML);  //actualiza menú
     exit;
   end;
-  //no encontró archivo XML apropiado
+  //No encontró archivo XML apropiado
   //Carga una sintaxis básica para limpiar la que pudiera haber
   hl.ClearMethodTables;           //limpìa tabla de métodos
   hl.ClearSpecials;               //para empezar a definir tokens
   //crea tokens por contenido
-  hl.DefTokIdentif('[$A..Za..z_]', 'A..Za..z0..9_');
-  hl.DefTokContent('[0..9.]', '0..9xabcdefXABCDEF', '', hl.tkNumber);
+  hl.DefTokIdentif('[$A-Za-z_]', '[A-Za-z0-9_]*');
+  hl.DefTokContent('[0-9]', '[0-9.]*', hl.tkNumber);
   hl.DefTokDelim('"','"', hl.tkString);
   hl.Rebuild;  //reconstruye
   CheckLanguageMenu('');  //actualiza menú

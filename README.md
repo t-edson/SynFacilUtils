@@ -1,7 +1,7 @@
-SynFacilUtils 0.3
-=================
+SynFacilUtils 0.4b
+==================
 
-Librería para implementación de las funcionalidades típicas de un editor de texto usando el componente SynEdit. Está basado en la librería 'UtilEditSyn' y en el resaltador 'SynFacilCompletion'.
+Librería para implementación de las funcionalidades típicas de un editor de texto usando el componente SynEdit. Está basado en la el resaltador de sintaxis 'SynFacilSyn'.
 
 Incluye funciones para el manejo de los formatos de salto de línea más comunes (UNIX, DOS, MAC) y maneja diversas codificaciones de texto como UTF8, win-1252, etc.
 
@@ -19,12 +19,15 @@ La librería requiere los siguientes archivos:
 
 * MisUtils.pas -> Librería de utilidades para trabajar con Lazarus (Ver https://github.com/t-edson/MisUtils).
 
-* SynFacilHighlighter.pas -> Es el resaltador de sintaxis que usa SynFacilCompletion. Debe ser de la versión 0.9.5 (Ver https://github.com/t-edson/SynFacilSyn).
+* SynFacilHighlighter.pas -> Es el resaltador de sintaxis que usa SynFacilCompletion. Debe ser de la versión 1.0 o superior (Ver https://github.com/t-edson/SynFacilSyn).
 
 * SynFacilCompletion -> Donde se define el resaltador con autocompletado. Se espera que todos los editores, usados por 'SynFacilUtils', usen este resaltdor por defecto (Ver https://github.com/t-edson/SynFacilCompletion).
 
 * SynFacilUtils.pas -> Es la librería donde se define el objeto 'TSynFacilEditor' que es el objeto principal de trabajo. Incluye además utilidades para la implementación de editores de texto.
 
+El archivo que contiene a la librería es "SynFacilUtils.pas", pero se incluye también, por comodidad, a los archivos "SynFacilHighlighter.pas" y "SynFacilCompletion", para evitar tener que descargarlos independientemente.
+
+Por lo general solo será necesario incluir "SynFacilUtils" en la sección de unidades.
 
 Para su uso, declarar un objeto Editor y crearlo y destruirlo apropiadamente:
 
