@@ -1,10 +1,21 @@
-{                               TSynFacilSyn 1.1b
-* Se corrigen GetState() y SetState() para manejar más apropiadamente el estado
-del resaltador.
+{                               TSynFacilSyn 1.11b
+* Se corrige el valor devuelto por GetY().
+* Se modificó ExtractRegExp() para corregir las falla de la versión anaterior, relacionada con
+el problema para procesar correctamente las secuencias:
+          <Regex Text='[^"\\]*' ></Regex>
+          <Regex Text='[^\\"]*' ></Regex>
 
-En esta versión .
 
-                                    Por Tito Hinostroza  30/11/2014 - Lima Perú
+Queda pendiente incluir el procesamiento de los paréntesis en las expresiones regulares,
+como una forma sencilla de definir bloques de Regex, sin tener que usar la definición
+avanzada. También se podría ver si se puede mejorar el soporte de Regex, sobre todo para el
+caso de expresiones como ".*a".
+
+Esta versión es para corregir algunos problemas que quedaron pendientes de la anterior versión.
+No se agregan nuevas funcionalidades.
+
+
+                                    Por Tito Hinostroza  22/07/2015 - Lima Perú
 }
 unit SynFacilHighlighter;
 {$mode objfpc}{$H+}
@@ -56,7 +67,8 @@ type
   protected  //Variables internas
     lisBlocks  : TFaListBlocks; //lista de bloques de sintaxis
     delTok     : string;        //delimitador del bloque actual
-    folTok     : boolean;       //indica si hay folding que cerrar en token delimitado
+    folTok     : boolean;       //indica si hay "folding" que cerrar en token delimitado actual
+    chrEsc     : char;          //indica si hay caracter de escape en token delimitado actual (#0 si no hay)
     nTokenCon  : integer;       //cantidad de tokens por contenido
     fRange     : TPtrTokEspec;    //para trabajar con tokens multilínea
     BlkToClose : TFaSynBlock;   //bandera-variable para posponer el cierre de un bloque
@@ -101,7 +113,7 @@ type
     procedure AddSymbSpec(symb: string; tokTyp: TSynHighlighterAttributes; TokPos: integer=0);
     procedure AddSymbSpecList(listSym: string; tokTyp: TSynHighlighterAttributes; TokPos: integer=0);
     procedure DefTokDelim(dStart, dEnd: string; tokTyp: TSynHighlighterAttributes;
-      tipDel: TFaTypeDelim=tdUniLin; havFolding: boolean=false);
+      tipDel: TFaTypeDelim=tdUniLin; havFolding: boolean=false; chrEscape: char=#0);
     procedure RebuildSymbols;
     procedure LoadFromFile(Arc: string); virtual;     //Para cargar sintaxis
     procedure Rebuild; virtual;
@@ -195,7 +207,7 @@ type
     procedure metC3;
   private   //procesamiento de otros elementos
     procedure ProcTokenDelim(const d: TTokSpec);
-    procedure ProcIdentEsp(var mat: TArrayTokSpec);
+    procedure metIdentEsp(var mat: TArrayTokSpec);
     procedure metSimbEsp;
     //funciones rápidas para la tabla de métodos (símbolos especiales)
     procedure metSym1Car;
@@ -203,7 +215,7 @@ type
     procedure metUniLin1;
     procedure metFinLinea;
     //funciones llamadas en medio de rangos
-    procedure ProcFinLinea;
+    procedure ProcEndLine;
     procedure ProcRangeEndSym;
     procedure ProcRangeEndSym1;
     procedure ProcRangeEndIden;
@@ -214,7 +226,7 @@ type
     function GetX: Integer; inline; //devuelve la posición X actual del resaltador
     function GetY: Integer; inline; //devuelve la posición Y actual del resaltador
     function GetXY: TPoint;  //devuelve la posición actual del resaltador
-    property Range: TPtrTokEspec read fRange; // write fRange;
+    property Range: TPtrTokEspec read fRange write fRange;
     property State: TFaLexerState read GetState write SetState;
   public     //métodos OVERRIDE
     procedure SetLine(const NewValue: String; LineNumber: Integer); override;
@@ -648,7 +660,7 @@ begin
 end;
 //definición de tokens delimitados
 procedure TSynFacilSyn.DefTokDelim(dStart, dEnd: string; tokTyp: TSynHighlighterAttributes;
-  tipDel: TFaTypeDelim=tdUniLin; havFolding: boolean=false);
+  tipDel: TFaTypeDelim=tdUniLin; havFolding: boolean=false; chrEscape: char = #0);
 {Función genérica para agregar un token delimitado a la sintaxis. Si encuentra error,
 genera una excepción}
 var
@@ -664,7 +676,7 @@ var
     if r.dEnd = '' then exit;
     if r.dEnd = #13 then begin   //Como comentario de una línea
       //no puede ser multilínea
-      r.pRange := @ProcFinLinea;
+      r.pRange := @ProcEndLine;
       exit;
     end;
     //los siguientes casos pueden ser multilínea
@@ -681,7 +693,7 @@ var
 begin
   if dEnd='' then dEnd := #13;  //no se permite delimitador final vacío
   ValidateParamStart(dStart, lisTmp);
-  dEnd := ReplaceEscape(dEnd);  //conveirte secuencias de escape
+  dEnd := ReplaceEscape(dEnd);  //convierte secuencias de escape
   VerifDelim(dEnd);
   //configura token especial
   for tmp in lisTmp do begin
@@ -691,6 +703,7 @@ begin
     tok^.typDel:=tipDel;
     tok^.tTok  :=tokTyp;
     tok^.folTok:=havFolding;
+    tok^.chrEsc:=chrEscape;
     ActProcRange(tok^);  //completa .pRange()
   end;
 end;
@@ -843,7 +856,7 @@ begin
   end;
   //verifica configuraciones por defecto
   if not defIDENTIF then //no se indicó etiqueta IDENTIFIERS
-    DefTokIdentif('[A-Za-z$_]', '[A-Za..z0-9_]*');  //def. por defecto
+    DefTokIdentif('[A-Za-z$_]', '[A-Za-z0-9_]*');  //def. por defecto
 //  if not defSIMBOLO then //no se indicó etiqueta SYMBOLS
 end;
 function TSynFacilSyn.ProcXMLBlock(nodo: TDOMNode; blqPad: TFaSynBlock): boolean;
@@ -986,7 +999,7 @@ var
   nodo    : TDOMNode;
   i, j    : integer;
   nombre  : string;
-  tmp     : string;
+  subExp     : string;
   p : tFaTokContent;
   t : tFaRegExpType;
   dStart: String;
@@ -997,6 +1010,9 @@ var
   match: Boolean;
   nodo2: TDOMNode;
   tIfTrue,tIfFalse, tText: TFaXMLatrib;
+  list: String;
+  tEscape,tAtTrue,tAtFalse: TFaXMLatrib;
+  chrEscape: Char;
 begin
 DebugLn('');
 DebugLn(' === Cargando archivo de sintaxis ===');
@@ -1016,7 +1032,7 @@ DebugLn(' === Cargando archivo de sintaxis ===');
        if (nombre = 'IDENTIFIERS') or (nombre = 'SYMBOLS') or
           (nombre = 'ATTRIBUTE') or (nombre = 'COMPLETION') or
           (nombre = 'SAMPLE') or(nombre = '#COMMENT') then begin
-         //solo se incluye para evitar error de "etiqueta desconocida"
+         //No se hace nada. Solo se incluye para evitar error de "etiqueta desconocida"
 //     end else if IsAttributeName(nombre)  then begin
        end else if nombre =  'KEYWORD' then begin
          //forma corta de <TOKEN ATTRIBUTE='KEYWORD'> lista </TOKEN>
@@ -1039,6 +1055,7 @@ DebugLn(' === Cargando archivo de sintaxis ===');
          tMultiline:=ReadXMLParam(nodo,'Multiline');  //Falso, si no existe
          tFolding  := ReadXMLParam(nodo,'Folding');    //Falso, si no existe
          tMatch    := ReadXMLParam(nodo,'RegexMatch'); //Tipo de coincidencia
+         tEscape   := ReadXMLParam(nodo,'Escape'); //
          if (nombre = 'COMMENT') and not tEnd.hay then tEnd.hay := true; //por compatibilidad
          //verifica tipo de definición
          if tContent.hay then begin //Si hay "Content", es token por contenido
@@ -1046,7 +1063,7 @@ DebugLn(' === Cargando archivo de sintaxis ===');
            dStart := dStartRegex(tStart, tCharsStart);  //extrae delimitador inicial
            p := DefTokContent(dStart, tipTok);
            //define contenido
-           p.AddInstruct(ToListRegex(tContent)+'*');
+           p.AddInstruct(ToListRegex(tContent)+'*','','');
          end else if tRegex.hay then begin //definición de token por contenido con Regex
            CheckXMLParams(nodo, 'Start CharsStart Regex Attribute RegexMatch');
            match := UpCase(tMatch.val)='COMPLETE';
@@ -1055,18 +1072,27 @@ DebugLn(' === Cargando archivo de sintaxis ===');
              p := DefTokContent(dStart, tipTok);
              p.AddRegEx(tRegex.val, match);  //agrega la otra parte de la expresión
            end else begin  //modo simplificado: <token regex="" />
-             tmp := ExtractRegExp(tRegex.val, t);  //extrae primera expresión
-             p := DefTokContent(tmp, tipTok);
+             subExp := ExtractRegExpN(tRegex.val, t);  //extrae primera expresión
+             if t = tregChars1_ then begin  //[A-Z]+
+               //Esta forma, normalmente no sería válida, pero se puede dividir
+               //en las formas [A-Z][A-Z]*, y así sería válida
+               list := copy(subExp, 1, length(subExp)-1);  //quita "+"
+               subExp := list;  //transforma en lista simple
+               tRegex.val := list + '*' + tRegex.val;  //completa
+             end;
+             p := DefTokContent(subExp, tipTok);
              p.AddRegEx(tRegex.val, match);  //agrega la otra parte de la expresión
            end;
          end else if tEnd.hay then begin //definición de token delimitado
-           CheckXMLParams(nodo, 'Start CharsStart End Attribute Multiline Folding');
+           CheckXMLParams(nodo, 'Start CharsStart End Attribute Multiline Folding Escape');
            dStart := dStartRegex(tStart, tCharsStart);  //extrae delimitador inicial
+           if (tEscape.hay) and (tEscape.val<>'') then chrEscape:= tEscape.val[1]
+           else chrEscape := #0;
            //no se espera que DefTokDelim(), genere error aquí.
            if tMultiline.bol then  //es multilínea
-             DefTokDelim(dStart, tEnd.val, tipTok, tdMulLin, tFolding.bol)
+             DefTokDelim(dStart, tEnd.val, tipTok, tdMulLin, tFolding.bol, chrEscape)
            else  //es de una sola líneas
-             DefTokDelim(dStart, tEnd.val, tipTok, tdUniLin, tFolding.bol);
+             DefTokDelim(dStart, tEnd.val, tipTok, tdUniLin, tFolding.bol, chrEscape);
          end else begin  //definición incompleta
            if tStart.hay or tCharsStart.hay then begin //se ha indicado delimitador inicial
              dStart := dStartRegex(tStart, tCharsStart);  //extrae delimitador
@@ -1075,12 +1101,17 @@ DebugLn(' === Cargando archivo de sintaxis ===');
              for j := 0 to nodo.ChildNodes.Count-1 do begin
                nodo2 := nodo.ChildNodes[j];
                if UpCAse(nodo2.NodeName)='REGEX' then begin  //instrucción
-                 tText := ReadXMLParam(nodo2,'Text');
+                 tText   := ReadXMLParam(nodo2,'Text');
                  tIfTrue := ReadXMLParam(nodo2,'IfTrue');
-                 tIfFalse := ReadXMLParam(nodo2,'IfFalse');
-                 CheckXMLParams(nodo2, 'Text IfTrue IfFalse');
+                 tIfFalse:= ReadXMLParam(nodo2,'IfFalse');
+                 tAtTrue := ReadXMLParam(nodo2,'AtTrue');
+                 tAtFalse:= ReadXMLParam(nodo2,'AtFalse');
+                 CheckXMLParams(nodo2, 'Text IfTrue IfFalse AtTrue AtFalse');
                  //Agrega la instrucción
-                 p.AddInstruct(tText.val, tIfTrue.val, tIfFalse.val);
+                 p.AddInstruct(tText.val, tIfTrue.val, tIfFalse.val,
+                       GetAttribByName(tAtTrue.val), GetAttribByName(tAtFalse.val));
+               end else if UpCase(nodo2.NodeName)='#COMMENT' then begin
+                 //solo lo deja pasar,para no generar error
                end else begin
                  raise ESynFacilSyn.Create(Format(ERR_INVAL_LAB_TOK,[nodo2.NodeName]));
                end;
@@ -1160,7 +1191,7 @@ DebugLn('  [' + r.txt[1] + '] -> @metTokCont3 (Token Por Conten. inicio exclusiv
       //Token por contenido, que se puede optimizar
 DebugLn('  [' + r.txt[1] + '] -> @metTokCont4 (Token Por Conten. inicio exclusivo)');
       fProcTable[r.txt[1]] := @metTokCont4;
-    end else if dSexc and (r.typDel=tdUniLin) and (r.txt=r.dEnd) then begin
+    end else if dSexc and (r.typDel=tdUniLin) and (r.txt=r.dEnd) and (r.chrEsc=#0) then begin
       //Caso típico de cadenas. Es procesable por nuestra función "metUniLin1"
 DebugLn('  [' + r.txt[1] + '] -> @metUniLin1 (uniLin c/delims iguales de 1 car)');
       fProcTable[r.txt[1]] := @metUniLin1;
@@ -1195,80 +1226,6 @@ DebugLn('  [' + r.txt[1] + '] -> @metSym1Car (símbolo simple de 1 car)');
 DebugLn('--------------------------------');
 //  lisBlocksTmp.Free;
 end;
-//******************** proc. de identificadores especiales ******************
-procedure TSynFacilSyn.metA;begin ProcIdentEsp(mA);end;
-procedure TSynFacilSyn.metB;begin ProcIdentEsp(mB);end;
-procedure TSynFacilSyn.metC;begin ProcIdentEsp(mC);end;
-procedure TSynFacilSyn.metD;begin ProcIdentEsp(mD);end;
-procedure TSynFacilSyn.metE;begin ProcIdentEsp(mE);end;
-procedure TSynFacilSyn.metF;begin ProcIdentEsp(mF);end;
-procedure TSynFacilSyn.metG;begin ProcIdentEsp(mG);end;
-procedure TSynFacilSyn.metH;begin ProcIdentEsp(mH);end;
-procedure TSynFacilSyn.metI;begin ProcIdentEsp(mI);end;
-procedure TSynFacilSyn.metJ;begin ProcIdentEsp(mJ);end;
-procedure TSynFacilSyn.metK;begin ProcIdentEsp(mK);end;
-procedure TSynFacilSyn.metL;begin ProcIdentEsp(mL);end;
-procedure TSynFacilSyn.metM;begin ProcIdentEsp(mM);end;
-procedure TSynFacilSyn.metN;begin ProcIdentEsp(mN);end;
-procedure TSynFacilSyn.metO;begin ProcIdentEsp(mO);end;
-procedure TSynFacilSyn.metP;begin ProcIdentEsp(mP);end;
-procedure TSynFacilSyn.metQ;begin ProcIdentEsp(mQ);end;
-procedure TSynFacilSyn.metR;begin ProcIdentEsp(mR);end;
-procedure TSynFacilSyn.metS;begin ProcIdentEsp(mS);end;
-procedure TSynFacilSyn.metT;begin ProcIdentEsp(mT);end;
-procedure TSynFacilSyn.metU;begin ProcIdentEsp(mU);end;
-procedure TSynFacilSyn.metV;begin ProcIdentEsp(mV);end;
-procedure TSynFacilSyn.metW;begin ProcIdentEsp(mW);end;
-procedure TSynFacilSyn.metX;begin ProcIdentEsp(mX);end;
-procedure TSynFacilSyn.metY;begin ProcIdentEsp(mY);end;
-procedure TSynFacilSyn.metZ;begin ProcIdentEsp(mZ);end;
-
-procedure TSynFacilSyn.metA_; begin ProcIdentEsp(mA_);end;
-procedure TSynFacilSyn.metB_; begin ProcIdentEsp(mB_);end;
-procedure TSynFacilSyn.metC_; begin ProcIdentEsp(mC_);end;
-procedure TSynFacilSyn.metD_; begin ProcIdentEsp(mD_);end;
-procedure TSynFacilSyn.metE_; begin ProcIdentEsp(mE_);end;
-procedure TSynFacilSyn.metF_; begin ProcIdentEsp(mF_);end;
-procedure TSynFacilSyn.metG_; begin ProcIdentEsp(mG_);end;
-procedure TSynFacilSyn.metH_; begin ProcIdentEsp(mH_);end;
-procedure TSynFacilSyn.metI_; begin ProcIdentEsp(mI_);end;
-procedure TSynFacilSyn.metJ_; begin ProcIdentEsp(mJ_);end;
-procedure TSynFacilSyn.metK_; begin ProcIdentEsp(mK_);end;
-procedure TSynFacilSyn.metL_; begin ProcIdentEsp(mL_);end;
-procedure TSynFacilSyn.metM_; begin ProcIdentEsp(mM_);end;
-procedure TSynFacilSyn.metN_; begin ProcIdentEsp(mN_);end;
-procedure TSynFacilSyn.metO_; begin ProcIdentEsp(mO_);end;
-procedure TSynFacilSyn.metP_; begin ProcIdentEsp(mP_);end;
-procedure TSynFacilSyn.metQ_; begin ProcIdentEsp(mQ_);end;
-procedure TSynFacilSyn.metR_; begin ProcIdentEsp(mR_);end;
-procedure TSynFacilSyn.metS_; begin ProcIdentEsp(mS_);end;
-procedure TSynFacilSyn.metT_; begin ProcIdentEsp(mT_);end;
-procedure TSynFacilSyn.metU_; begin ProcIdentEsp(mU_);end;
-procedure TSynFacilSyn.metV_; begin ProcIdentEsp(mV_);end;
-procedure TSynFacilSyn.metW_; begin ProcIdentEsp(mW_);end;
-procedure TSynFacilSyn.metX_; begin ProcIdentEsp(mX_);end;
-procedure TSynFacilSyn.metY_; begin ProcIdentEsp(mY_);end;
-procedure TSynFacilSyn.metZ_; begin ProcIdentEsp(mZ_);end;
-
-procedure TSynFacilSyn.metDol;
-begin ProcIdentEsp(mDol);
-end;
-procedure TSynFacilSyn.metArr;
-begin ProcIdentEsp(mArr);
-end;
-procedure TSynFacilSyn.metPer;
-begin ProcIdentEsp(mPer);
-end;
-procedure TSynFacilSyn.metAmp;
-begin ProcIdentEsp(mAmp);
-end;
-procedure TSynFacilSyn.metC3;
-begin ProcIdentEsp(mC3);
-end;
-procedure TSynFacilSyn.metUnd;
-begin ProcIdentEsp(m_);
-end;
-
 /////////// manejo de bloques
 procedure TSynFacilSyn.StartBlock(ABlockType: Pointer; IncreaseLevel: Boolean); inline;
 //Procedimiento geenral para abrir un bloque en el resaltador
@@ -1445,6 +1402,7 @@ begin
       fTokenID := d.tTok;   //asigna token
       delTok := d.dEnd;   //para que esté disponible al explorar la línea actual.
       folTok := false;    //No tiene sentido el plegado, en token de una línea.
+      chrEsc := d.chrEsc; //caracter de escape
       if posFin=tamLin then exit;  //si está al final, necesita salir con fTokenID fijado.
       d.pRange;  //ejecuta función de procesamiento
       //Se considera que este tipo de tokens, puede ser también inicio o fin de bloque
@@ -1462,6 +1420,7 @@ begin
       fTokenID := d.tTok;   //asigna token
       delTok := d.dEnd;    //para que esté disponible al explorar las sgtes. líneas.
       folTok := d.folTok;  //para que esté disponible al explorar las sgtes. líneas.
+      chrEsc := d.chrEsc;  //caracter de escape
       if folTok then StartBlock(MulTokBlk, MulTokBlk.showFold);  //abre al inicio del token
       fRange := @d;    //asigna rango apuntando a este registro
       if posFin=tamLin then exit;  //si está al final, necesita salir con fTokenID fijado.
@@ -1487,7 +1446,8 @@ begin
     fTokenID := d.tTok; //no es delimitador, solo toma su atributo.
   end;
 end;
-procedure TSynFacilSyn.ProcIdentEsp(var mat: TArrayTokSpec); //inline;
+//Rutinas de procesamiento de Identificadores especiales
+procedure TSynFacilSyn.metIdentEsp(var mat: TArrayTokSpec); //inline;
 //Procesa el identificador actual con la matriz indicada
 var i: integer;
 begin
@@ -1503,6 +1463,66 @@ begin
     end;
   end;
 end;
+procedure TSynFacilSyn.metA;begin metIdentEsp(mA);end;
+procedure TSynFacilSyn.metB;begin metIdentEsp(mB);end;
+procedure TSynFacilSyn.metC;begin metIdentEsp(mC);end;
+procedure TSynFacilSyn.metD;begin metIdentEsp(mD);end;
+procedure TSynFacilSyn.metE;begin metIdentEsp(mE);end;
+procedure TSynFacilSyn.metF;begin metIdentEsp(mF);end;
+procedure TSynFacilSyn.metG;begin metIdentEsp(mG);end;
+procedure TSynFacilSyn.metH;begin metIdentEsp(mH);end;
+procedure TSynFacilSyn.metI;begin metIdentEsp(mI);end;
+procedure TSynFacilSyn.metJ;begin metIdentEsp(mJ);end;
+procedure TSynFacilSyn.metK;begin metIdentEsp(mK);end;
+procedure TSynFacilSyn.metL;begin metIdentEsp(mL);end;
+procedure TSynFacilSyn.metM;begin metIdentEsp(mM);end;
+procedure TSynFacilSyn.metN;begin metIdentEsp(mN);end;
+procedure TSynFacilSyn.metO;begin metIdentEsp(mO);end;
+procedure TSynFacilSyn.metP;begin metIdentEsp(mP);end;
+procedure TSynFacilSyn.metQ;begin metIdentEsp(mQ);end;
+procedure TSynFacilSyn.metR;begin metIdentEsp(mR);end;
+procedure TSynFacilSyn.metS;begin metIdentEsp(mS);end;
+procedure TSynFacilSyn.metT;begin metIdentEsp(mT);end;
+procedure TSynFacilSyn.metU;begin metIdentEsp(mU);end;
+procedure TSynFacilSyn.metV;begin metIdentEsp(mV);end;
+procedure TSynFacilSyn.metW;begin metIdentEsp(mW);end;
+procedure TSynFacilSyn.metX;begin metIdentEsp(mX);end;
+procedure TSynFacilSyn.metY;begin metIdentEsp(mY);end;
+procedure TSynFacilSyn.metZ;begin metIdentEsp(mZ);end;
+
+procedure TSynFacilSyn.metA_; begin metIdentEsp(mA_);end;
+procedure TSynFacilSyn.metB_; begin metIdentEsp(mB_);end;
+procedure TSynFacilSyn.metC_; begin metIdentEsp(mC_);end;
+procedure TSynFacilSyn.metD_; begin metIdentEsp(mD_);end;
+procedure TSynFacilSyn.metE_; begin metIdentEsp(mE_);end;
+procedure TSynFacilSyn.metF_; begin metIdentEsp(mF_);end;
+procedure TSynFacilSyn.metG_; begin metIdentEsp(mG_);end;
+procedure TSynFacilSyn.metH_; begin metIdentEsp(mH_);end;
+procedure TSynFacilSyn.metI_; begin metIdentEsp(mI_);end;
+procedure TSynFacilSyn.metJ_; begin metIdentEsp(mJ_);end;
+procedure TSynFacilSyn.metK_; begin metIdentEsp(mK_);end;
+procedure TSynFacilSyn.metL_; begin metIdentEsp(mL_);end;
+procedure TSynFacilSyn.metM_; begin metIdentEsp(mM_);end;
+procedure TSynFacilSyn.metN_; begin metIdentEsp(mN_);end;
+procedure TSynFacilSyn.metO_; begin metIdentEsp(mO_);end;
+procedure TSynFacilSyn.metP_; begin metIdentEsp(mP_);end;
+procedure TSynFacilSyn.metQ_; begin metIdentEsp(mQ_);end;
+procedure TSynFacilSyn.metR_; begin metIdentEsp(mR_);end;
+procedure TSynFacilSyn.metS_; begin metIdentEsp(mS_);end;
+procedure TSynFacilSyn.metT_; begin metIdentEsp(mT_);end;
+procedure TSynFacilSyn.metU_; begin metIdentEsp(mU_);end;
+procedure TSynFacilSyn.metV_; begin metIdentEsp(mV_);end;
+procedure TSynFacilSyn.metW_; begin metIdentEsp(mW_);end;
+procedure TSynFacilSyn.metX_; begin metIdentEsp(mX_);end;
+procedure TSynFacilSyn.metY_; begin metIdentEsp(mY_);end;
+procedure TSynFacilSyn.metZ_; begin metIdentEsp(mZ_);end;
+procedure TSynFacilSyn.metDol;begin metIdentEsp(mDol);end;
+procedure TSynFacilSyn.metArr;begin metIdentEsp(mArr);end;
+procedure TSynFacilSyn.metPer;begin metIdentEsp(mPer);end;
+procedure TSynFacilSyn.metAmp;begin metIdentEsp(mAmp);end;
+procedure TSynFacilSyn.metC3;begin metIdentEsp(mC3);end;
+procedure TSynFacilSyn.metUnd;begin metIdentEsp(m_);end;
+//Rutina única de procesamiento de Símbolos especiales
 procedure TSynFacilSyn.metSimbEsp;
 //Procesa un caracter que es inicio de símbolo y podría ser origen de un símbolo especial.
 var i: integer;
@@ -1528,19 +1548,19 @@ begin
    Ahora debemos continuar la exploración al siguiente caracter}
   posFin := posIni + 1;  //a siguiente caracter, y deja el actual como: fTokenID := tkSymbol
 end;
-//funciones rápidas para la tabla de métodos (símbolos especiales)
+//Funciones rápidas para la tabla de métodos (símbolos especiales)
 procedure TSynFacilSyn.metSym1Car;
 //Procesa tokens símbolo de un caracter de ancho.
 begin
   fTokenID := fAtriTable[charIni];   //lee atributo
   Inc(posFin);  //pasa a la siguiente posición
 end;
-//funciones rápidas para la tabla de métodos (tokens delimitados)
+//Funciones rápidas para la tabla de métodos (tokens delimitados)
 procedure TSynFacilSyn.metUniLin1;
 //Procesa tokens de una sola línea y con delimitadores iguales y de un solo caracter.
 begin
   fTokenID := fAtriTable[charIni];   //lee atributo
-  Inc(posFin);  {no hay peligro en incrmentar porque siempre se llama "metUniLin1" con
+  Inc(posFin);  {no hay peligro en incrementar porque siempre se llama "metUniLin1" con
                  el carcater actual <> #0}
   while posFin <> tamLin do begin
     if fLine[posFin] = charIni then begin //busca fin de cadena
@@ -1556,8 +1576,10 @@ begin
   fTokenID := fAtriTable[charIni];   //lee atributo
   posFin := tamLin;  //salta rápidamente al final
 end;
-//****** funciones llamadas por puntero y/o en medio de rangos  *************
-procedure TSynFacilSyn.ProcFinLinea;
+//Funciones llamadas por puntero y/o en medio de rangos. Estas funciones son llamadas
+//cuando se procesa un token especial que es inicio de token delimitado y no ha sido
+//optimizado para usar los métodos rápidos.
+procedure TSynFacilSyn.ProcEndLine;
 //Procesa hasta encontrar el fin de línea.
 begin
   posFin := tamLin;  //salta rápidamente al final
@@ -1583,13 +1605,20 @@ procedure TSynFacilSyn.ProcRangeEndSym1;
 var p: PChar;
 begin
   //busca delimitador final
-  p := strscan(fLine+posFin,delTok[1]);
+  if chrEsc=#0 then begin  //no hay caracter de escape
+    p := strscan(fLine+posFin,delTok[1]);
+  end else begin  //debe filtrar el caracter de escape
+    p := strscan(fLine+posFin,delTok[1]);
+    while (p<>nil) and ((p-1)^=chrEsc) do begin
+      p := strscan(p+1,delTok[1]);
+    end;
+  end;
   if p = nil then begin   //no se encuentra
      posFin := tamLin;  //apunta al fin de línea
   end else begin  //encontró
      posFin := p + 1 - fLine;
      fRange := nil;              //no necesario para tokens Unilínea
-     if folTok then BlkToClose := MulTokBlk; //marca para cerrar en el siguuiente token
+     if folTok then BlkToClose := MulTokBlk; //marca para cerrar en el siguiente token
   end;
 end;
 procedure TSynFacilSyn.ProcRangeEndIden;
@@ -1619,7 +1648,7 @@ begin
   //definitívamente no se encuentra
   posFin := tamLin;  //apunta al fin de línea
 end;
-
+///////////////////////////////////////////////////////////////////////////////////
 procedure TSynFacilSyn.AddIniBlockToTok(dStart: string; TokPos: integer; blk: TFaSynBlock);
 //Agrega a un token especial, la referencia a un bloque, en la parte inicial.
 //Si hay error, genera excepción.
@@ -1777,7 +1806,7 @@ function TSynFacilSyn.SetHighlighterAtXY(XY: TPoint): boolean;
 //La posición XY, empieza en (1,1). Si tuvo exito devuelve TRUE.
 var
   PosX, PosY: integer;
-  Line: string;
+//  Line: string;
   Start: Integer;
 begin
   Result := false;  //valor por defecto
@@ -1786,9 +1815,9 @@ begin
   if (PosY < 0) or (PosY >= CurrentLines.Count) then exit;
   PosX := XY.X;
   if (PosX <= 0) then exit;
-  Line := CurrentLines[PosY];
+{  Line := CurrentLines[PosY];
   //validación
-{  if PosX >= Length(Line)+1 then begin
+  if PosX >= Length(Line)+1 then begin
     //Está al final o más. Simula el estado al final de la línea
     //Este bloque se puede quitar
     SetLine(Line);
@@ -2024,7 +2053,7 @@ begin
 end;
 function TSynFacilSyn.GetY: Integer; inline;
 begin
-  Result:=lineIndex;  //aquí se guarda
+  Result:=lineIndex+1;  //corrige
 end;
 function TSynFacilSyn.GetXY: TPoint;
 //Devuelve las coordenadas de la posicón actual de exploración.
