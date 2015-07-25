@@ -4,7 +4,8 @@
 el problema para procesar correctamente las secuencias:
           <Regex Text='[^"\\]*' ></Regex>
           <Regex Text='[^\\"]*' ></Regex>
-
+* Se corrige un error que daba cuandos e incluían comentarios dentro de la etiquetas
+SYMBOLS o IDENTIFIERS, en el archivo XML.
 
 Queda pendiente incluir el procesamiento de los paréntesis en las expresiones regulares,
 como una forma sencilla de definir bloques de Regex, sin tener que usar la definición
@@ -816,6 +817,8 @@ begin
            CheckXMLParams(atri, 'TokPos'); //valida
            //Crea los identificadores especiales
            AddIdentSpecList(atri.TextContent, GetAttribByName(nombre), tTokPos.n);
+         end else if nombre = '#COMMENT' then begin
+           //solo para evitar que de mensaje de error
          end else begin
            raise ESynFacilSyn.Create(Format(ERR_INVAL_LBL_IDEN, [atri.NodeName]));
          end;
@@ -843,6 +846,8 @@ begin
            CheckXMLParams(atri, 'TokPos'); //valida
            //crea los símbolos especiales
            AddSymbSpecList(atri.TextContent, GetAttribByName(nombre), tTokPos.n);
+         end else if nombre = '#COMMENT' then begin
+           //solo para evitar que de mensaje de error
          end else begin
            raise ESynFacilSyn.Create(Format(ERR_INVAL_LBL_IN_LBL, [atri.NodeName]));
          end;

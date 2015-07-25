@@ -87,7 +87,7 @@ La idea es pasar el control de las acciones, o eventos de menú al nuevo objeto 
 
 #Resaltado de sintaxis
 
-Pero la librería SynFacilUtils, está pensada para trabajar con editores con resaltado de sintaxis, usando el resaltador 'SynFacilCompletion'.
+La librería SynFacilUtils, está pensada para trabajar con editores con resaltado de sintaxis, usando el resaltador 'SynFacilCompletion'.
 
 Configurar el resaltado de sintaxis es fácil, con SynFacilUtils. Basta con usar el método LoadSyntaxFromFile(), para indicar el archivo de sintaxis que se debe usar.
 
@@ -121,6 +121,20 @@ La librería toma el control de los  eventos OnChange(), OnStatusChange(), OnMou
 Si se necesita usar los eventos OnChange(), OnMouseDown(), OnKeyDown(), OnKeyUp() u OnKeyPress(), se debe usar sus equivalentes en TSynFacilEditor.
 
 Para un ejemplo más completo de uso, ver los proyecto de muestra adjuntos.
+
+#Menú de archivos recientes
+
+SynFacilUtils, incluye la opción de mostrar un menú con una lista de los archivos abiertos recientemente. Para habilitar esta opción, se usa el método InitMenuRecents():
+```
+  edit.InitMenuRecents(mnRecientes, listaRecientes);
+```
+El primer parámetro es el ítem del menú (que ya debe exitir), que se usará para poner la lista de archivos recientes. El segundo parámetro es una lista que se usará para almacenar los nombres de los archivos a usar.
+
+El método espera a que se le proporcione un TStringList ya creado como segundo parámetro. SynFacilUtils no creará ni destruirá esta lista.
+
+Cada vez que la librería detecte que se está usando un nuevo archivo (como cuando se abre uno nuevo), actualizará el menú asociado. No hay trabajo adicional que se deba hacer una vez que se ha configurado el menú de archivos recientes. 
+
+Tampoco es necesario, definir el "Caption" del ítem del menú usado, ya que la librería usará los nombres 'Recientes' o 'Recents", dependiendo del idioma en que se encuentre configurado.
 
 #Accesorios
 
