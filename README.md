@@ -1,7 +1,7 @@
-SynFacilUtils 0.4b
-==================
+SynFacilUtils 0.4
+=================
 
-Librería para implementación de las funcionalidades típicas de un editor de texto usando el componente SynEdit. Está basado en la el resaltador de sintaxis 'SynFacilSyn'.
+Librería para implementación de las funcionalidades típicas de un editor de texto usando el componente SynEdit. Está basado en  el resaltador de sintaxis 'SynFacilSyn'.
 
 Incluye funciones para el manejo de los formatos de salto de línea más comunes (UNIX, DOS, MAC) y maneja diversas codificaciones de texto como UTF8, win-1252, etc.
 

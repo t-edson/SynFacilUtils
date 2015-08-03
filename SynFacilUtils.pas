@@ -1,8 +1,8 @@
 {
-SynFacilUtils 0.4b
+SynFacilUtils 0.4
 ==================
 Por Tito Hinostroza 19/12/2014
-* Se adapta para trabajar con la versión 1.0 de SynFacilSyn y de SynFaciLComplet.
+* Se adapta para trabajar con la versión 1.1 de SynFacilSyn y de SynFaciLComplet.
 
 Descripción
 ===========
