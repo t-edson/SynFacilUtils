@@ -851,6 +851,7 @@ begin
   if not OpenDialog1.Execute then exit;    //se canceló
   arc0 := OpenDialog1.FileName;
   LoadFile(arc0);  //legalmente debería darle en UTF-8
+  Result := false;   //No usado actualmente
 end;
 function TSynFacilEditor.SaveAsDialog(SaveDialog1: TSaveDialog): boolean;
 //Guarda el contenido del editor, permitiendo cambiar el nombre con un diálogo.

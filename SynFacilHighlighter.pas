@@ -6,6 +6,7 @@ el problema para procesar correctamente las secuencias:
           <Regex Text='[^\\"]*' ></Regex>
 * Se corrige un error que daba cuandos e incluían comentarios dentro de la etiquetas
 SYMBOLS o IDENTIFIERS, en el archivo XML.
+* Se corrige la respuesta de ProcRangeEndIden, cuando se usa CaseSensitive en TRUE.
 
 Queda pendiente incluir el procesamiento de los paréntesis en las expresiones regulares,
 como una forma sencilla de definir bloques de Regex, sin tener que usar la definición
@@ -23,7 +24,7 @@ unit SynFacilHighlighter;
 interface
 uses
   Classes, SysUtils, Graphics, SynEditHighlighter, DOM, XMLRead,
-  Dialogs, Fgl, Lazlogger, SynEditHighlighterFoldBase, LCLIntf,
+  Dialogs, Fgl, strings, Lazlogger, SynEditHighlighterFoldBase, LCLIntf,
   SynFacilBasic;
 const
   COL_TRANSPAR = $FDFEFF;  //color transparente
@@ -1633,7 +1634,10 @@ var p: Pchar;
     c1, c2: char;
 begin
   //busca delimitador final
-  p := strpos(fLine+posFin,PChar(delTok));
+  if CaseSensitive then
+    p := strpos(fLine+posFin,PChar(delTok))
+  else
+    p := stripos(fLine+posFin,PChar(delTok));
   while p <> nil do begin   //definitivamente no se encuentra
     //verifica si es inicio de identificador
     c1:=(p-1)^;  {Retrocede. No debería haber problema en retroceder siempre, porque se
@@ -1642,7 +1646,10 @@ begin
     c2:=(p+length(delTok))^;   //apunta al final, puede ser el final de línea #0
     if (c1 in charsIniIden) or CharsIdentif[c1] or CharsIdentif[c2] then begin
       //está en medio de un identificador. No es válido.
-      p := strpos(p+length(delTok),PChar(delTok));  //busca siguiente
+      if CaseSensitive then
+        p := strpos(p+length(delTok),PChar(delTok))  //busca siguiente
+      else
+        p := stripos(p+length(delTok),PChar(delTok));  //busca siguiente
     end else begin  //es el identificador buscado
       posFin := p + length(delTok) - fLine;  //puede terminar apuntándo a #0
       fRange := nil;               //no necesario para tokens Unilínea
