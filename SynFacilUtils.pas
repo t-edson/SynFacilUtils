@@ -1,8 +1,8 @@
 {
-SynFacilUtils 0.4
-==================
-Por Tito Hinostroza 19/12/2014
-* Se adapta para trabajar con la versión 1.1 de SynFacilSyn y de SynFaciLComplet.
+SynFacilUtils 0.6b
+=================
+Por Tito Hinostroza 19/08/2015
+* Incluye la versión 1.13 de SynFaciLCompletion.
 
 Descripción
 ===========

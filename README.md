@@ -1,5 +1,11 @@
-SynFacilUtils 0.4
+SynFacilUtils 0.6b
 =================
+
+#Cambios en la versión 0.6
+
+Se actualiza con la versión 1.13b de SynFacilCompletion
+
+#Descripción
 
 Librería para implementación de las funcionalidades típicas de un editor de texto usando el componente SynEdit. Está basado en  el resaltador de sintaxis 'SynFacilSyn'.
 
