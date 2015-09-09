@@ -1,10 +1,10 @@
-{                               TSynFacilSyn 1.11b
+{                               TSynFacilSyn 1.11
 * Se corrige el valor devuelto por GetY().
 * Se modificó ExtractRegExp() para corregir las falla de la versión anaterior, relacionada con
 el problema para procesar correctamente las secuencias:
           <Regex Text='[^"\\]*' ></Regex>
           <Regex Text='[^\\"]*' ></Regex>
-* Se corrige un error que daba cuandos e incluían comentarios dentro de la etiquetas
+* Se corrige un error que daba cuando se incluían comentarios dentro de la etiquetas
 SYMBOLS o IDENTIFIERS, en el archivo XML.
 * Se corrige la respuesta de ProcRangeEndIden, cuando se usa CaseSensitive en TRUE.
 
