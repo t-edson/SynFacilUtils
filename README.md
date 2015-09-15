@@ -3,7 +3,7 @@ SynFacilUtils 0.6b
 
 ##Cambios en la versión 0.6
 
-Se actualiza con la versión 1.13b de SynFacilCompletion
+Se actualiza con la versión 1.13 de SynFacilCompletion y 1.14b de SynFacilSyn.
 
 #Descripción
 
