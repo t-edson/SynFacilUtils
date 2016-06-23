@@ -1,8 +1,13 @@
 {
-SynFacilUtils 0.6b
+SynFacilUtils 0.7
 =================
 Por Tito Hinostroza 19/08/2015
-* Incluye la versión 1.13 de SynFaciLCompletion y 1.13 de SynFacilSyn.
+* Incluye la versión 1.13 de SynFaciLCompletion y 1.15 de SynFacilSyn.
+
+SynFacilUtils 0.6
+=================
+Por Tito Hinostroza 19/08/2015
+* Incluye la versión 1.13 de SynFaciLCompletion y 1.14b de SynFacilSyn.
 
 Descripción
 ===========

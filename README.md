@@ -1,5 +1,10 @@
-SynFacilUtils 0.6b
+SynFacilUtils 0.7
 =================
+
+##Cambios en la versión 0.7
+=================
+
+Se actualiza con la versión 1.15 de SynFacilSyn.
 
 ##Cambios en la versión 0.6
 

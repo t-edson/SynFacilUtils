@@ -1,14 +1,10 @@
-{                               TSynFacilSyn 1.14b
-* Se cambia el nombre de algunos campos (referidos a bloques) de tipo TTokSpec, para
-hacerlos más asociados a su función.
-* Se simplifica algo de código de ProcTokenDelim, y se hacen algunas modificaciones
-del código para ordenarlo y hacerlo más legible. Se cambia el nombre de varios
-elementos.
-* Se cambia de nombre a BlkToClose por ClosethisBlk.
-* Se agrega el parámetro "CloseParent" a la sintaxis del XML, para poder forzar a
-cerrar un bloque padre cuando se cierra un bloque hijo.
-* Se crean los eventos OnBeforeClose() y OnBeforeOpen(), para controlar externamente,
-la apertura y cierre de los bloques.
+{                               TSynFacilSyn 1.15b
+* Se convierten varios métodos privados en campos protegidos, para permitir
+acceder a ellos, desde clases derivadas.
+* Se ha modificado DefTokDelim(), para aceptar el caracter "^" al inicio, como
+el caracter Regex, que indica que el delimtador debe estar al inicio de la línea.
+* Elimina el parámetro opcional de TEvBlockOnOpen, para que se pueda compilar con FPC 3.0.
+* Se modifica DefTokDelim, para que se pueda compilar con FPC 3.0.
 
 Queda pendiente incluir el procesamiento de los paréntesis en las expresiones regulares,
 como una forma sencilla de definir bloques de Regex, sin tener que usar la definición
@@ -20,8 +16,8 @@ bloques, apuntando a mejorar la legibilidad. Para ello se ha tenido que cambiar
 el nombre de diversas variables y métodos.
 También se ha incluido el parámetro "CloseParent", que ayuda en la definición de
 bloques de lenguajes similares al Pascal.
-Es de notar que en esta versión aparecen eventos para detcetar la apertura y cierre de
-los blqoues.
+Es de notar que en esta versión aparecen eventos para detectar la apertura y cierre de
+los bloques.
 
 
                                     Por Tito Hinostroza  15/09/2015 - Lima Perú
@@ -217,7 +213,7 @@ type
     procedure metPer;
     procedure metAmp;
     procedure metC3;
-  private   //procesamiento de otros elementos
+  protected   //procesamiento de otros elementos
     procedure ProcTokenDelim(const d: TTokSpec);
     procedure metIdentEsp(var mat: TArrayTokSpec);
     procedure metSimbEsp;
@@ -677,7 +673,7 @@ procedure TSynFacilSyn.DefTokDelim(dStart, dEnd: string; tokTyp: TSynHighlighter
 genera una excepción}
 var
   tok  : TPtrTokEspec;
-  tmp: String;
+  tmp, tmpnew: String;
   procedure ActProcRange(var r: TTokSpec);
   //Configura el puntero pRange() para la función apropiada de acuerdo al delimitador final.
   begin
@@ -709,7 +705,17 @@ begin
   VerifDelim(dEnd);
   //configura token especial
   for tmp in lisTmp do begin
-    CreaBuscEspec(tok, tmp, 0); //busca o crea
+    if (tmp<>'') and (tmp[1]='^') then begin
+      tmpnew := copy(tmp,2,length(tmp));
+      CreaBuscEspec(tok, tmpnew, 1); //busca o crea
+    end else begin
+      if copy(tmp,1,2) = '\^' then begin  //caracter escapado
+        tmpnew := '^' + copy(tmp,3,length(tmp));
+        CreaBuscEspec(tok, tmpnew, 0); //busca o crea
+      end else begin
+        CreaBuscEspec(tok, tmp, 0); //busca o crea
+      end;
+    end;
     //actualiza sus campos. Cambia, si ya existía
     tok^.dEnd  :=dEnd;
     tok^.typDel:=tipDel;
