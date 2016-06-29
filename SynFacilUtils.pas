@@ -2,7 +2,7 @@
 SynFacilUtils 0.8
 =================
 Por Tito Hinostroza 19/08/2015
-* Incluye la versión 1.16 de SynFacilSyn.
+* Incluye la versión 1.16 de SynFacilSyn y 1.14 de SynFacilCompletion .
 
 SynFacilUtils 0.7
 =================
@@ -24,7 +24,7 @@ unit SynFacilUtils; {$mode objfpc}{$H+}
 interface
 uses  Classes, windows, SysUtils, Clipbrd, SynEdit, SynEditMarkupHighAll,
       lconvencoding, Graphics, FileUtil, Dialogs, Controls, Forms, LCLType, ComCtrls,
-      SynEditKeyCmds, SynEditTypes, Menus, strUtils, MisUtils, FormSelFuente,
+      SynEditKeyCmds, SynEditTypes, Menus, strUtils, LazUTF8, MisUtils, FormSelFuente,
       SynFacilCompletion;  //necesario para rutinas de manejo de sintaxis
 
 type
