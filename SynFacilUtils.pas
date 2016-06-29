@@ -1,4 +1,9 @@
 {
+SynFacilUtils 0.8
+=================
+Por Tito Hinostroza 19/08/2015
+* Incluye la versión 1.16 de SynFacilSyn.
+
 SynFacilUtils 0.7
 =================
 Por Tito Hinostroza 19/08/2015
