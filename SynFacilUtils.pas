@@ -3,6 +3,8 @@ SynFacilUtils 0.8
 =================
 Por Tito Hinostroza 19/08/2015
 * Incluye la versión 1.16 de SynFacilSyn y 1.14 de SynFacilCompletion .
+* Se corrige retorno de valor de OpenDialog.
+* Se quita la dependencia de la unidad Windows
 
 SynFacilUtils 0.7
 =================
@@ -22,7 +24,7 @@ Trabaja con SynFacilCompletion 1.0 o superior
 }
 unit SynFacilUtils; {$mode objfpc}{$H+}
 interface
-uses  Classes, windows, SysUtils, Clipbrd, SynEdit, SynEditMarkupHighAll,
+uses  Classes, SysUtils, Clipbrd, SynEdit, SynEditMarkupHighAll,
       lconvencoding, Graphics, FileUtil, Dialogs, Controls, Forms, LCLType, ComCtrls,
       SynEditKeyCmds, SynEditTypes, Menus, strUtils, LazUTF8, MisUtils, FormSelFuente,
       SynFacilCompletion;  //necesario para rutinas de manejo de sintaxis
@@ -852,16 +854,16 @@ begin
 end;
 function TSynFacilEditor.OpenDialog(OpenDialog1: TOpenDialog): boolean;
 //Muestra el cuadro de diálogo para abrir un archivo, teniendo cuidado de
-//pedir confirmación para grabar el contenido actual.
+//pedir confirmación para grabar el contenido actual. Si hay error devuelve FALSE.
 var arc0: string;
 begin
   Error := '';
-  if SaveQuery then Exit;   //Verifica cambios
-  if Error<>'' then exit;  //hubo error
-  if not OpenDialog1.Execute then exit;    //se canceló
+  if SaveQuery then exit(true);   //Verifica cambios
+  if Error<>'' then exit(false);  //hubo error
+  if not OpenDialog1.Execute then exit(true);    //se canceló
   arc0 := OpenDialog1.FileName;
   LoadFile(arc0);  //legalmente debería darle en UTF-8
-  Result := false;   //No usado actualmente
+  Result := true;   //sale sin incidencias
 end;
 function TSynFacilEditor.SaveAsDialog(SaveDialog1: TSaveDialog): boolean;
 //Guarda el contenido del editor, permitiendo cambiar el nombre con un diálogo.
@@ -1038,8 +1040,8 @@ procedure TSynFacilEditor.TrimLines(fSelFuente: TfrmSelFuente);
 //Requiere un formaulario de tipo TfrmSelFuente para mostrar el dialogo.
 var
   i: integer;
-  f1: LONG;
-  f2: LONG;
+  f1: integer;
+  f2: integer;
 begin
   if ed.SelAvail then begin
     fSelFuente.optLin.Enabled:=false;

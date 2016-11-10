@@ -745,14 +745,14 @@ begin
   //muestra los símbolos especiales que existen
 //DebugLn('------ delimitadores símbolo, ordenados --------');
 //for tokCtl in mSym do DebugLn('  delim: '+ tokCtl.cad );
-DebugLn('---------actualizando tabla de funciones----------');
+//DebugLn('---------actualizando tabla de funciones----------');
   {Captura los caracteres válidos para delimitadores y asigna las funciones
    para el procesamiento de delimitadores, usando el símbolo inicial}
   i := 0;
   while i <= High(mSym) do begin
     c := mSym[i].txt[1];   //toma primer caracter
     if fProcTable[c] <> @metSimbEsp then begin  //prepara procesamiento de delimitador
-      DebugLn('  puntero a funcion en: [' + c + '] -> @metSimbEsp');
+//      DebugLn('  puntero a funcion en: [' + c + '] -> @metSimbEsp');
       fProcTable[c] := @metSimbEsp;  //prepara procesamiento de delimitador
     end;
     { Para hacerlo más óptimo se debería usar una matriz para cada símbolo, de
@@ -1189,9 +1189,9 @@ var
 
 begin
   DebugLn('---------símbolos leidos: mSym0[]----------');
-  for i:=0 to High(mSym0) do
-    DebugLn('  bloque: '+ mSym0[i].txt + ',' + StringReplace(mSym0[i].dEnd, #13,#25,[]));
-  DebugLn('---------simplificando símbolos----------');
+//  for i:=0 to High(mSym0) do
+//    DebugLn('  bloque: '+ mSym0[i].txt + ',' + StringReplace(mSym0[i].dEnd, #13,#25,[]));
+//  DebugLn('---------simplificando símbolos----------');
 
   //Explora los símbolos para optimizar el procesamiento
   setlength(mSym,0);  //limpia, porque vamos a reconstruir
@@ -1200,29 +1200,29 @@ begin
     dSexc:=delStart1Exclus(r.txt);  //ve si es de 1 caracter y exclusivo
     if          dSexc and (r.typDel=tdConten1) then begin
       //Token por contenido, que se puede optimizar
-DebugLn('  [' + r.txt[1] + '] -> @metTokCont1 (Token Por Conten. inicio exclusivo)');
+//DebugLn('  [' + r.txt[1] + '] -> @metTokCont1 (Token Por Conten. inicio exclusivo)');
       fProcTable[r.txt[1]] := @metTokCont1;
     end else if dSexc and (r.typDel=tdConten2) then begin
       //Token por contenido, que se puede optimizar
-DebugLn('  [' + r.txt[1] + '] -> @metTokCont2 (Token Por Conten. inicio exclusivo)');
+//DebugLn('  [' + r.txt[1] + '] -> @metTokCont2 (Token Por Conten. inicio exclusivo)');
       fProcTable[r.txt[1]] := @metTokCont2;
     end else if dSexc and (r.typDel=tdConten3) then begin
       //Token por contenido, que se puede optimizar
-DebugLn('  [' + r.txt[1] + '] -> @metTokCont3 (Token Por Conten. inicio exclusivo)');
+//DebugLn('  [' + r.txt[1] + '] -> @metTokCont3 (Token Por Conten. inicio exclusivo)');
       fProcTable[r.txt[1]] := @metTokCont3;
     end else if dSexc and (r.typDel=tdConten4) then begin
       //Token por contenido, que se puede optimizar
-DebugLn('  [' + r.txt[1] + '] -> @metTokCont4 (Token Por Conten. inicio exclusivo)');
+//DebugLn('  [' + r.txt[1] + '] -> @metTokCont4 (Token Por Conten. inicio exclusivo)');
       fProcTable[r.txt[1]] := @metTokCont4;
     end else if dSexc and (r.typDel=tdUniLin) and (r.txt=r.dEnd) and (r.chrEsc=#0) then begin
       //Caso típico de cadenas. Es procesable por nuestra función "metUniLin1"
-DebugLn('  [' + r.txt[1] + '] -> @metUniLin1 (uniLin c/delims iguales de 1 car)');
+//DebugLn('  [' + r.txt[1] + '] -> @metUniLin1 (uniLin c/delims iguales de 1 car)');
       fProcTable[r.txt[1]] := @metUniLin1;
       fAtriTable[r.txt[1]] := r.tTok; //para que metUniLin1() lo pueda recuperar
     //busca tokens una línea con delimitador de un caracter
     end else if dSexc and (r.typDel=tdUniLin) and (r.dEnd=#13) then begin
       //Caso típico de comentarios. Es procesable por nuestra función "metFinLinea"
-DebugLn('  [' + r.txt[1] + '] -> @metFinLinea (uniLin con dStart de 1 car y dEnd = #13)');
+//DebugLn('  [' + r.txt[1] + '] -> @metFinLinea (uniLin con dStart de 1 car y dEnd = #13)');
       fProcTable[r.txt[1]] := @metFinLinea;
       fAtriTable[r.txt[1]] := r.tTok; //para que metFinLinea() lo pueda recuperar
       { TODO : Se podría crear un procedimiento para manejar bloques multilíneas
@@ -1232,7 +1232,7 @@ DebugLn('  [' + r.txt[1] + '] -> @metFinLinea (uniLin con dStart de 1 car y dEnd
                 not r.OpenSec then begin
       //Es símbolo especial de un caracter, exclusivo, que no es parte de token delimitado
       //ni es inicio o fin de bloque
-DebugLn('  [' + r.txt[1] + '] -> @metSym1Car (símbolo simple de 1 car)');
+//DebugLn('  [' + r.txt[1] + '] -> @metSym1Car (símbolo simple de 1 car)');
       fProcTable[r.txt[1]] := @metSym1Car;
       fAtriTable[r.txt[1]] := r.tTok; //para que metSym1Car() lo pueda recuperar
     end else begin //no se puede simplificar.
@@ -1246,7 +1246,7 @@ DebugLn('  [' + r.txt[1] + '] -> @metSym1Car (símbolo simple de 1 car)');
   if CurrentLines <> nil then  //Hay editor asignado
     ScanAllRanges;  {Necesario, porque se ha reconstruido los TTokSpec y
                        los valores de "fRange" de las líneas, están "perdidos"}
-DebugLn('--------------------------------');
+//DebugLn('--------------------------------');
 //  lisBlocksTmp.Free;
 end;
 /////////// manejo de bloques
