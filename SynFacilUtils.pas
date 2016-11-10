@@ -5,6 +5,8 @@ Por Tito Hinostroza 19/08/2015
 * Incluye la versión 1.16 de SynFacilSyn y 1.14 de SynFacilCompletion .
 * Se corrige retorno de valor de OpenDialog.
 * Se quita la dependencia de la unidad Windows
+* Se cambia el caracter '\' por  DirectorySeparator;
+
 
 SynFacilUtils 0.7
 =================
@@ -1229,7 +1231,8 @@ begin
   if menLanguage0 = nil then exit;
   mnLanguages := menLanguage0;  //guarda referencia a menú
   LangPath := LangPath0;        //guarda ruta
-  if (LangPath<>'') and (LangPath[length(LangPath)] <> '\') then LangPath+='\';
+  if (LangPath<>'') and (LangPath[length(LangPath)] <> DirectorySeparator) then
+     LangPath+=DirectorySeparator;
   //configura menú
   mnLanguages.Caption:= dic('&Lenguajes');
   //explora archivos
