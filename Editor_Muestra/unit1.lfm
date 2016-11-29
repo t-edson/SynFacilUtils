@@ -12,7 +12,7 @@ object Form1: TForm1
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnDropFiles = FormDropFiles
-  LCLVersion = '1.2.4.0'
+  LCLVersion = '1.6.0.4'
   inline SynEdit1: TSynEdit
     Left = 0
     Height = 256
@@ -458,7 +458,6 @@ object Form1: TForm1
       'SynEdit1'
     )
     VisibleSpecialChars = [vscSpace, vscTabAtLast]
-    SelectedColor.FrameEdges = sfeAround
     SelectedColor.BackPriority = 50
     SelectedColor.ForePriority = 50
     SelectedColor.FramePriority = 50
@@ -466,23 +465,17 @@ object Form1: TForm1
     SelectedColor.ItalicPriority = 50
     SelectedColor.UnderlinePriority = 50
     SelectedColor.StrikeOutPriority = 50
-    IncrementColor.FrameEdges = sfeAround
-    HighlightAllColor.FrameEdges = sfeAround
     BracketHighlightStyle = sbhsBoth
     BracketMatchColor.Background = clNone
     BracketMatchColor.Foreground = clNone
-    BracketMatchColor.FrameEdges = sfeAround
     BracketMatchColor.Style = [fsBold]
     FoldedCodeColor.Background = clNone
     FoldedCodeColor.Foreground = clGray
     FoldedCodeColor.FrameColor = clGray
-    FoldedCodeColor.FrameEdges = sfeAround
     MouseLinkColor.Background = clNone
     MouseLinkColor.Foreground = clBlue
-    MouseLinkColor.FrameEdges = sfeAround
     LineHighlightColor.Background = clNone
     LineHighlightColor.Foreground = clNone
-    LineHighlightColor.FrameEdges = sfeAround
     inline SynLeftGutterPartList1: TSynGutterPartList
       object SynGutterMarks1: TSynGutterMarks
         Width = 24
@@ -493,7 +486,6 @@ object Form1: TForm1
         MouseActions = <>
         MarkupInfo.Background = clBtnFace
         MarkupInfo.Foreground = clNone
-        MarkupInfo.FrameEdges = sfeAround
         DigitCount = 2
         ShowOnlyLineNumbersMultiplesOf = 1
         ZeroStart = False
@@ -510,13 +502,11 @@ object Form1: TForm1
         MouseActions = <>
         MarkupInfo.Background = clWhite
         MarkupInfo.Foreground = clGray
-        MarkupInfo.FrameEdges = sfeAround
       end
       object SynGutterCodeFolding1: TSynGutterCodeFolding
         MouseActions = <>
         MarkupInfo.Background = clNone
         MarkupInfo.Foreground = clGray
-        MarkupInfo.FrameEdges = sfeAround
         MouseActionsExpanded = <>
         MouseActionsCollapsed = <>
       end
@@ -558,34 +548,27 @@ object Form1: TForm1
     TabOrder = 2
     object ToolButton1: TToolButton
       Left = 1
-      Hint = 'Nuevo Archivo'
       Top = 2
-      Caption = '&Nuevo'
-      ImageIndex = 13
+      Action = acArcNuevo
     end
     object ToolButton2: TToolButton
       Left = 24
-      Hint = 'Abrir Archivo'
       Top = 2
-      Caption = '&Abrir...'
-      ImageIndex = 9
+      Action = acArcAbrir
     end
     object ToolButton3: TToolButton
       Left = 47
-      Hint = 'Guardar Archivo'
       Top = 2
-      Caption = '&Guardar'
-      ImageIndex = 6
+      Action = acArcGuardar
     end
     object ToolButton4: TToolButton
       Left = 70
-      Hint = 'Guardar como...'
       Top = 2
-      Caption = 'G&uardar Como...'
-      ImageIndex = 12
+      Action = acArcGuaCom
     end
     object ToolButton5: TToolButton
       Left = 93
+      Height = 22
       Top = 2
       Width = 10
       Caption = 'ToolButton5'
@@ -593,38 +576,28 @@ object Form1: TForm1
     end
     object ToolButton6: TToolButton
       Left = 103
-      Hint = 'Deshacer'
       Top = 2
-      Caption = '&Deshacer'
-      ImageIndex = 1
+      Action = acEdUndo
     end
     object ToolButton7: TToolButton
       Left = 126
-      Hint = 'Rehacer'
       Top = 2
-      Caption = '&Rehacer'
-      ImageIndex = 2
+      Action = acEdRedo
     end
     object ToolButton8: TToolButton
       Left = 149
-      Hint = 'Cortar'
       Top = 2
-      Caption = 'Cor&tar'
-      ImageIndex = 3
+      Action = acEdCut
     end
     object ToolButton9: TToolButton
       Left = 172
-      Hint = 'Copiar'
       Top = 2
-      Caption = '&Copiar'
-      ImageIndex = 10
+      Action = acEdCopy
     end
     object ToolButton10: TToolButton
       Left = 195
-      Hint = 'Pegar'
       Top = 2
-      Caption = '&Pegar'
-      ImageIndex = 11
+      Action = acEdPaste
     end
   end
   object OpenDialog1: TOpenDialog
@@ -1508,8 +1481,8 @@ object Form1: TForm1
   end
   object ActionList: TActionList
     Images = ImageList1
-    left = 192
-    top = 80
+    left = 200
+    top = 76
     object acArcNuevo: TAction
       Category = 'Arc'
       Caption = '&Nuevo'
@@ -1606,12 +1579,14 @@ object Form1: TForm1
       Category = 'Search'
       Caption = 'Buscar...'
       ImageIndex = 17
+      OnExecute = acBusBuscarExecute
       ShortCut = 16450
     end
     object acBusBusSig: TAction
       Category = 'Search'
       Caption = 'Buscar &Siguiente'
       ImageIndex = 18
+      OnExecute = acBusBusSigExecute
       ShortCut = 114
     end
     object acBusReemp: TAction
@@ -2176,5 +2151,10 @@ object Form1: TForm1
         ImageIndex = 16
       end
     end
+  end
+  object FindDialog1: TFindDialog
+    OnFind = FindDialog1Find
+    left = 272
+    top = 76
   end
 end

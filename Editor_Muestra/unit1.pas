@@ -1,14 +1,11 @@
 {Programa ejemplo de uso de la librería para implementar editores "utilEditSyn".
                                         Por Tito Hinostroza   11/07/2014 }
 unit Unit1;
-
 {$mode objfpc}{$H+}
-
 interface
-
 uses
-  Classes, SysUtils, FileUtil, SynEdit, Forms, Controls, Graphics, Dialogs,
-  Menus, ComCtrls, ActnList, StdActns, SynFacilUtils;
+  Classes, SysUtils, FileUtil, SynEdit, SynEditTypes, Forms, Controls, Graphics,
+  Dialogs, Menus, ComCtrls, ActnList, StdActns, SynFacilUtils;
 
 type
 
@@ -35,6 +32,7 @@ type
     acVerBarEst: TAction;
     acVerNumLin: TAction;
     acVerPanArc: TAction;
+    FindDialog1: TFindDialog;
     ImageList1: TImageList;
     MainMenu1: TMainMenu;
     MenuItem1: TMenuItem;
@@ -81,11 +79,14 @@ type
     procedure acArcGuardarExecute(Sender: TObject);
     procedure acArcNuevoExecute(Sender: TObject);
     procedure acArcSalirExecute(Sender: TObject);
+    procedure acBusBuscarExecute(Sender: TObject);
+    procedure acBusBusSigExecute(Sender: TObject);
     procedure acEdiRedoExecute(Sender: TObject);
     procedure acEdiSelecAllExecute(Sender: TObject);
     procedure acEdiUndoExecute(Sender: TObject);
     procedure ChangeEditorState;
     procedure editChangeFileInform;
+    procedure FindDialog1Find(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -163,6 +164,24 @@ begin
   Caption := 'Editor - ' + edit.NomArc;
 end;
 
+procedure TForm1.FindDialog1Find(Sender: TObject);
+var
+  encon  : integer;
+  buscado : string;
+  opciones: TSynSearchOptions;
+begin
+  buscado := FindDialog1.FindText;
+  opciones := [];
+  if not(frDown in FindDialog1.Options) then opciones += [ssoBackwards];
+  if frMatchCase in FindDialog1.Options then opciones += [ssoMatchCase];
+  if frWholeWord in FindDialog1.Options then opciones += [ssoWholeWord];
+  if frEntireScope in FindDialog1.Options then opciones += [ssoEntireScope];
+
+  encon := SynEdit1.SearchReplace(buscado,'',opciones);
+  if encon = 0 then
+     ShowMessage('No found: ' + buscado);
+end;
+
 /////////////////// Acciones de Archivo /////////////////////
 procedure TForm1.acArcNuevoExecute(Sender: TObject);
 begin
@@ -192,6 +211,17 @@ procedure TForm1.acArcSalirExecute(Sender: TObject);
 begin
   Form1.Close;
 end;
+
+procedure TForm1.acBusBuscarExecute(Sender: TObject);
+begin
+  FindDialog1.Execute;
+end;
+
+procedure TForm1.acBusBusSigExecute(Sender: TObject);
+begin
+  FindDialog1Find(self);
+end;
+
 //////////// Acciones de Edición ////////////////
 procedure TForm1.acEdiUndoExecute(Sender: TObject);
 begin
