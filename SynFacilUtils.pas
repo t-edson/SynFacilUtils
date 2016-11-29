@@ -1,4 +1,10 @@
 {
+SynFacilUtils 0.9
+=================
+Por Tito Hinostroza 27/11/2016
+* Incluye la versión 1.16 de SynFacilSyn y 1.15 de SynFacilCompletion .
+* Se agrega el método RefreshPanCursor().
+
 SynFacilUtils 0.8
 =================
 Por Tito Hinostroza 19/08/2015
@@ -133,7 +139,10 @@ type
     procedure ChangeEncoding(nueCod: string);       //cambia codificación
     procedure InitMenuEncoding(mnEncoding0: TMenuItem);  //configura menú
     procedure EncodingClick(Sender: TObject);       //evento click
-    //Espejo de funciones comunes del editor
+    procedure ChangeFileInform;
+    //funciones para completado de código
+    procedure CloseCompletionWindow;
+  public  //Espejo de funciones comunes del editor
     procedure Cut;
     procedure Copy;
     procedure Paste;
@@ -146,11 +155,7 @@ type
     function CanPaste: boolean;
 
     property Modified: boolean read GetModified write SetModified;
-    procedure ChangeFileInform;
-    //funciones para completado de código
-    procedure CloseCompletionWindow;
-  public
-    //paneles informativos
+  public  //Paneles informativos
     property PanFileSaved: TStatusPanel read fPanFileSaved write SetPanFileSaved;
     property PanCursorPos: TStatusPanel read fPanCursorPos write SetPanCursorPos;
 
@@ -160,7 +165,8 @@ type
     property PanLangName : TStatusPanel read fPanLangName write SetPanLangName;
 
     property Text: string read GetText write SetText;  //devuelve el contenido real del editor
-    //rutinas de inicio
+    procedure RefreshPanCursor;  //Refresca panel de la posición del cursor
+  public  //Rutinas de inicio
     procedure InitMenuRecents(menRecents0: TMenuItem; RecentList: TStringList;
       MaxRecents0: integer=5);
     procedure RecentClick(Sender: TObject);
@@ -469,8 +475,7 @@ end;
 procedure TSynFacilEditor.edMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
-  if fPanCursorPos <> nil then
-    fPanCursorPos.Text:= dic('fil=%d, col=%d',[ed.CaretY, ed.CaretX]);
+  RefreshPanCursor;
   linErr := 0;  //para que quite la marca de fondo del error.
                 //Solo se notará cuando se refresque la línea en el editor.
   //pasa el evento
@@ -497,8 +502,7 @@ end;
 procedure TSynFacilEditor.edCommandProcessed(Sender: TObject;
   var Command: TSynEditorCommand; var AChar: TUTF8Char; Data: pointer);
 begin
-  if fPanCursorPos <> nil then
-    fPanCursorPos.Text:= dic('fil=%d, col=%d',[ed.CaretY, ed.CaretX]);
+  RefreshPanCursor;
   linErr := 0;  //para que quite la marca de fondo del error.
                 //Solo se notará cuando se refresque la línea en el editor.
 end;
@@ -680,6 +684,59 @@ begin
     RecentFiles.Delete(MaxRecents);
 end;
 
+procedure TSynFacilEditor.ReplaceDialog1Find(Sender: TObject);
+var
+  encon  : integer;
+  buscado : string;
+  opciones: TSynSearchOptions;
+begin
+  buscado := ReplaceDialog1.FindText;
+  opciones := [];
+  if not(frDown in ReplaceDialog1.Options) then opciones += [ssoBackwards];
+  if frMatchCase in ReplaceDialog1.Options then opciones += [ssoMatchCase];
+  if frWholeWord in ReplaceDialog1.Options then opciones += [ssoWholeWord];
+  if frEntireScope in ReplaceDialog1.Options then opciones += [ssoEntireScope];
+
+  encon := ed.SearchReplace(buscado,'',opciones);
+  if encon = 0 then
+    MsgBox('No se encuentra: %s', [buscado]);
+end;
+procedure TSynFacilEditor.ReplaceDialog1Replace(Sender: TObject);
+var
+  encon, r : integer;
+  buscado : string;
+  opciones: TSynSearchOptions;
+begin
+  buscado := ReplaceDialog1.FindText;
+  opciones := [ssoFindContinue];
+//  opciones := [];
+  if not(frDown in ReplaceDialog1.Options) then opciones += [ssoBackwards];
+  if frMatchCase in ReplaceDialog1.Options then opciones += [ssoMatchCase];
+  if frWholeWord in ReplaceDialog1.Options then opciones += [ssoWholeWord];
+  if frEntireScope in ReplaceDialog1.Options then opciones += [ssoEntireScope];
+  if frReplaceAll in ReplaceDialog1.Options then begin
+    //se ha pedido reemplazar todo
+    encon := ed.SearchReplace(buscado,ReplaceDialog1.ReplaceText,
+                              opciones+[ssoReplaceAll]);  //reemplaza
+    msgbox('Se reemplazaron %d ocurrencias.',[encon]);
+    exit;
+  end;
+  //reemplazo con confirmación
+  ReplaceDialog1.CloseDialog;
+  encon := ed.SearchReplace(buscado,'',opciones);  //búsqueda
+  while encon <> 0 do begin
+      //pregunta
+      r := Application.MessageBox(Pchar(dic('¿Reemplazar esta ocurrencia?')),
+                Pchar(dic('Reemplazo')), MB_YESNOCANCEL);
+      if r = IDCANCEL then exit;
+      if r = IDYES then begin
+        ed.TextBetweenPoints[ed.BlockBegin,ed.BlockEnd] := ReplaceDialog1.ReplaceText;
+      end;
+      //busca siguiente
+      encon := ed.SearchReplace(buscado,'',opciones);  //búsca siguiente
+  end;
+  MsgBox('No se encuentra: %s', [buscado]);
+end;
 procedure TSynFacilEditor.SetModified(valor: boolean);
 //Cambia el valor del campo "Modified", del editor
 begin
@@ -698,27 +755,12 @@ function TSynFacilEditor.GetModified: boolean;
 begin
   Result := ed.Modified;
 end;
-
-function TSynFacilEditor.GetText: string;
-//Devuelve el contenido del editor, quitando el salto de línea final
-begin
-  Result := ed.Text;
-  if AnsiEndsStr(LineEnding, Result) then begin
-     Setlength(Result, length(Result)-length(LineEnding));
-  end;
-end;
-procedure TSynFacilEditor.SetText(AValue: string);
-//Fija el contenido del editor
-begin
-  ed.Text:=AValue;
-end;
 //"Setters" de los paneles
 procedure TSynFacilEditor.SetPanCursorPos(AValue: TStatusPanel);
 begin
   if FPanCursorPos=AValue then Exit;
   fPanCursorPos:=AValue;
-  if fPanCursorPos <> nil then
-    fPanCursorPos.Text:= dic('fil=%d, col=%d',[ed.CaretY, ed.CaretX]);
+  RefreshPanCursor;
 end;
 procedure TSynFacilEditor.SetPanFileSaved(AValue: TStatusPanel);
 begin
@@ -761,32 +803,18 @@ begin
     fPanLangName.Text:= hl.LangName;
   end;
 end;
-
-procedure TSynFacilEditor.ChangeFileInform;
-//Se debe llamar siempre que puede cambiar la información de nombre de archivo, tipo de
-//delimitador de línea o tipo de codificación del archivo.
+function TSynFacilEditor.GetText: string;
+//Devuelve el contenido del editor, quitando el salto de línea final
 begin
-  //actualiza información en los paneles
-  if fPanFileName <> nil then begin
-    fPanFileName.Text := SysToUTF8(NomArc);
+  Result := ed.Text;
+  if AnsiEndsStr(LineEnding, Result) then begin
+     Setlength(Result, length(Result)-length(LineEnding));
   end;
-  if fPanForEndLin <> nil then begin
-    fPanForEndLin.Text:=LineEnd_To_Str(DelArc);
-  end;
-  if fPanCodifFile <> nil then begin
-    fPanCodifFile.Text:=CodArc;
-  end;
-  //actualiza menús
-  CheckOnlyOneItem(mnLineEnding, LineEnd_To_Str(delArc));
-  CheckOnlyOneItem(mnEncoding, codArc);
-  //dispara evento
-  if OnChangeFileInform<>nil then OnChangeFileInform;
 end;
-
-procedure TSynFacilEditor.CloseCompletionWindow;
-//Cierra la ventana de completado
+procedure TSynFacilEditor.SetText(AValue: string);
+//Fija el contenido del editor
 begin
-  hl.CloseCompletionWindow;
+  ed.Text:=AValue;
 end;
 
 procedure TSynFacilEditor.NewFile(QuerySave: boolean=true);
@@ -954,59 +982,6 @@ begin
   if ed.SelAvail then ReplaceDialog1.FindText:=ed.SelText;
   ReplaceDialog1.Execute;
 end;
-procedure TSynFacilEditor.ReplaceDialog1Find(Sender: TObject);
-var
-  encon  : integer;
-  buscado : string;
-  opciones: TSynSearchOptions;
-begin
-  buscado := ReplaceDialog1.FindText;
-  opciones := [];
-  if not(frDown in ReplaceDialog1.Options) then opciones += [ssoBackwards];
-  if frMatchCase in ReplaceDialog1.Options then opciones += [ssoMatchCase];
-  if frWholeWord in ReplaceDialog1.Options then opciones += [ssoWholeWord];
-  if frEntireScope in ReplaceDialog1.Options then opciones += [ssoEntireScope];
-
-  encon := ed.SearchReplace(buscado,'',opciones);
-  if encon = 0 then
-    MsgBox('No se encuentra: %s', [buscado]);
-end;
-procedure TSynFacilEditor.ReplaceDialog1Replace(Sender: TObject);
-var
-  encon, r : integer;
-  buscado : string;
-  opciones: TSynSearchOptions;
-begin
-  buscado := ReplaceDialog1.FindText;
-  opciones := [ssoFindContinue];
-//  opciones := [];
-  if not(frDown in ReplaceDialog1.Options) then opciones += [ssoBackwards];
-  if frMatchCase in ReplaceDialog1.Options then opciones += [ssoMatchCase];
-  if frWholeWord in ReplaceDialog1.Options then opciones += [ssoWholeWord];
-  if frEntireScope in ReplaceDialog1.Options then opciones += [ssoEntireScope];
-  if frReplaceAll in ReplaceDialog1.Options then begin
-    //se ha pedido reemplazar todo
-    encon := ed.SearchReplace(buscado,ReplaceDialog1.ReplaceText,
-                              opciones+[ssoReplaceAll]);  //reemplaza
-    msgbox('Se reemplazaron %d ocurrencias.',[encon]);
-    exit;
-  end;
-  //reemplazo con confirmación
-  ReplaceDialog1.CloseDialog;
-  encon := ed.SearchReplace(buscado,'',opciones);  //búsqueda
-  while encon <> 0 do begin
-      //pregunta
-      r := Application.MessageBox(Pchar(dic('¿Reemplazar esta ocurrencia?')),
-                Pchar(dic('Reemplazo')), MB_YESNOCANCEL);
-      if r = IDCANCEL then exit;
-      if r = IDYES then begin
-        ed.TextBetweenPoints[ed.BlockBegin,ed.BlockEnd] := ReplaceDialog1.ReplaceText;
-      end;
-      //busca siguiente
-      encon := ed.SearchReplace(buscado,'',opciones);  //búsca siguiente
-  end;
-  MsgBox('No se encuentra: %s', [buscado]);
-end;
 //herramientas
 procedure TSynFacilEditor.TabToSpaces(fSelFuente: TfrmSelFuente);
 //Convierte tabulaciones a espacios.
@@ -1105,7 +1080,6 @@ begin
       if AnsiContainsText(ed.Lines[i],s) then sal.Add(ed.Lines[i]);
   End;
 end;
-
 //Funciones para cambio de Fin de Línea y Codificación
 procedure TSynFacilEditor.ChangeEndLineDelim(nueFor: TLineEnd);
 //Cambia el formato de salto de línea del contenido
@@ -1176,6 +1150,31 @@ begin
   ChangeEncoding(it.Caption);
   CheckOnlyOneItem(it); //marca menú
 end;
+procedure TSynFacilEditor.ChangeFileInform;
+//Se debe llamar siempre que puede cambiar la información de nombre de archivo, tipo de
+//delimitador de línea o tipo de codificación del archivo.
+begin
+  //actualiza información en los paneles
+  if fPanFileName <> nil then begin
+    fPanFileName.Text := SysToUTF8(NomArc);
+  end;
+  if fPanForEndLin <> nil then begin
+    fPanForEndLin.Text:=LineEnd_To_Str(DelArc);
+  end;
+  if fPanCodifFile <> nil then begin
+    fPanCodifFile.Text:=CodArc;
+  end;
+  //actualiza menús
+  CheckOnlyOneItem(mnLineEnding, LineEnd_To_Str(delArc));
+  CheckOnlyOneItem(mnEncoding, codArc);
+  //dispara evento
+  if OnChangeFileInform<>nil then OnChangeFileInform;
+end;
+procedure TSynFacilEditor.CloseCompletionWindow;
+//Cierra la ventana de completado
+begin
+  hl.CloseCompletionWindow;
+end;
 //Espejo de funciones comunes del editor
 procedure TSynFacilEditor.Cut;
 begin
@@ -1220,7 +1219,11 @@ function TSynFacilEditor.CanPaste: boolean;
 begin
   Result := ed.CanPaste;
 end;
-
+procedure TSynFacilEditor.RefreshPanCursor;
+begin
+  if fPanCursorPos <> nil then
+    fPanCursorPos.Text:= dic('fil=%d, col=%d',[ed.CaretY, ed.CaretX]);
+end;
 procedure TSynFacilEditor.InitMenuLanguages(menLanguage0: TMenuItem; LangPath0: string);
 //Inicia un menú con la lista de archivos XML (que representan a lenguajes) que hay
 //en una carpeta en particular y les asigna un evento.
