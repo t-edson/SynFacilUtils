@@ -1286,8 +1286,8 @@ begin
   hl.ClearSpecials;               //para empezar a definir tokens
   //crea tokens por contenido
   hl.DefTokIdentif('[$A-Za-z_]', '[A-Za-z0-9_]*');
-  hl.DefTokContent('[0-9]', '[0-9.]*', hl.tkNumber);
-  hl.DefTokDelim('"','"', hl.tkString);
+  hl.DefTokContent('[0-9]', '[0-9.]*', hl.tnNumber);
+  hl.DefTokDelim('"','"', hl.tnString);
   hl.Rebuild;  //reconstruye
   CheckLanguageMenu('');  //actualiza menú
   if fPanLangName<> nil then begin
