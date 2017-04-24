@@ -124,7 +124,7 @@ begin
 
   edit.NewFile;        //para actualizar estado
   edit.InitMenuRecents(mnRecientes, nil);  //inicia el menú "Recientes"
-  edit.InitMenuLanguages(mnLenguajes, '.\languages');
+  edit.InitMenuLanguages(mnLenguajes, '..\languages');
   edit.LoadSyntaxFromPath;  //para que busque el archivo apropiado
 //  edit.LoadSyntaxFromFile('.\languages\c.xml');
 end;

@@ -1,29 +1,4 @@
 {
-SynFacilUtils 0.9
-=================
-Por Tito Hinostroza 27/11/2016
-* Incluye la versión 1.16 de SynFacilSyn y 1.15 de SynFacilCompletion .
-* Se agrega el método RefreshPanCursor().
-
-SynFacilUtils 0.8
-=================
-Por Tito Hinostroza 19/08/2015
-* Incluye la versión 1.16 de SynFacilSyn y 1.14 de SynFacilCompletion .
-* Se corrige retorno de valor de OpenDialog.
-* Se quita la dependencia de la unidad Windows
-* Se cambia el caracter '\' por  DirectorySeparator;
-
-
-SynFacilUtils 0.7
-=================
-Por Tito Hinostroza 19/08/2015
-* Incluye la versión 1.13 de SynFaciLCompletion y 1.15 de SynFacilSyn.
-
-SynFacilUtils 0.6
-=================
-Por Tito Hinostroza 19/08/2015
-* Incluye la versión 1.13 de SynFaciLCompletion y 1.14b de SynFacilSyn.
-
 Descripción
 ===========
 Utilidades para la creación de editores con el resaltador SynFacilSyn.

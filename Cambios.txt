@@ -1,0 +1,5 @@
+1.0
+===
+* Incluye la versión 1.17 de SynFacilSyn y 1.17 de SynFacilCompletion .
+
+
