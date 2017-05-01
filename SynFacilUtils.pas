@@ -96,8 +96,8 @@ type
     procedure NewFile(QuerySave: boolean=true); virtual;
     procedure LoadFile(arc8: string); virtual;
     procedure SaveFile; virtual;
-    function OpenDialog(OpenDialog1: TOpenDialog): boolean;
-    function SaveAsDialog(SaveDialog1: TSaveDialog): boolean;
+    function OpenDialog(OpenDialog1: TOpenDialog): boolean; virtual;
+    function SaveAsDialog(SaveDialog1: TSaveDialog): boolean; virtual;
     function SaveQuery: boolean; virtual;
     //búsqueda/reemplazo
     procedure FindDialog;
