@@ -93,12 +93,12 @@ type
     OnKeyPress   : TKeyPressEvent;
     OnUTF8KeyPress: TUTF8KeyPressEvent;
     //funciones comunes de un editor
-    procedure NewFile(QuerySave: boolean=true);
-    procedure LoadFile(arc8: string);
-    procedure SaveFile;
+    procedure NewFile(QuerySave: boolean=true); virtual;
+    procedure LoadFile(arc8: string); virtual;
+    procedure SaveFile; virtual;
     function OpenDialog(OpenDialog1: TOpenDialog): boolean;
     function SaveAsDialog(SaveDialog1: TSaveDialog): boolean;
-    function SaveQuery: boolean;
+    function SaveQuery: boolean; virtual;
     //búsqueda/reemplazo
     procedure FindDialog;
     procedure FindNextWord(Sender: TObject);  //el método FindNext() ya existe
@@ -123,6 +123,7 @@ type
     procedure Paste;
     procedure Undo;
     procedure Redo;
+    procedure SelectAll;
     //Lee estado
     function CanUndo: boolean;
     function CanRedo: boolean;
@@ -915,9 +916,6 @@ begin
       Exit;
     end;
     if resp = mrYes then begin  //guardar
-//       if arc = 'SinNombre.sql' then
-//          mnArGuarCClick(NIL)
-//       else
       SaveFile;  //Actualizar "Error"
     end;
   end;
@@ -1172,6 +1170,10 @@ procedure TSynFacilEditor.Redo;
 //Rehace una acción en el editor
 begin
   ed.Redo;
+end;
+procedure TSynFacilEditor.SelectAll;
+begin
+  ed.SelectAll;
 end;
 //Lee estado
 function TSynFacilEditor.CanUndo: boolean;

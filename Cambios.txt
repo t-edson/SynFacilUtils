@@ -1,6 +1,8 @@
 1.0
 ===
-* Incluye la versión 1.18 de SynFacilSyn y 1.18 de SynFacilCompletion.
+Incluye la versión 1.18 de SynFacilSyn y 1.18 de SynFacilCompletion.
+Se agrega el método TSynFacilEditor.SelectAll;
+Se convierten en virtuales algunos métodos de TSynFacilEditor.
 
 1.0
 ===
