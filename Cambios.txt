@@ -1,4 +1,9 @@
-1.0
+1.2
+===
+Se quita las opciones implementadas para emular el funcionamiento en modo columna, ya
+que la nueva versión de SynEdit, ya incluye el modo de múltiples cursores.
+
+1.1
 ===
 Incluye la versión 1.18 de SynFacilSyn y 1.18 de SynFacilCompletion.
 Se agrega el método TSynFacilEditor.SelectAll;
