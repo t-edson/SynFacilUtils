@@ -29,16 +29,10 @@ type
     procedure edUTF8KeyPress(Sender: TObject; var UTF8Key: TUTF8Char);
   private
     procedure DoSelectLanguage(Sender: TObject);
-    procedure edKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure edKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure edMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
-    procedure edStatusChange(Sender: TObject; Changes: TSynStatusChanges);
-    procedure edChange(Sender: TObject);
-    procedure edCommandProcessed(Sender: TObject;
-      var Command: TSynEditorCommand; var AChar: TUTF8Char; Data: pointer);
     procedure CheckLanguageMenu(XMLfile: string);
-  private
+    procedure ReplaceDialog1Find(Sender: TObject);
+    procedure ReplaceDialog1Replace(Sender: TObject);
+  protected
     ed          : TSynEdit;    //referencia al editor
     fPanLangName: TStatusPanel;
     mnRecents   : TMenuItem;  //Menú de archivos recientes
@@ -54,8 +48,14 @@ type
     fPanFileName  : TStatusPanel;  //Panel para mostrar el nombre de archivo
     fPanForEndLin : TStatusPanel;  //Panel para mostrar el tipo de delimitador de línea
     fPanCodifFile : TStatusPanel;  //Panel para mostrar la codificaión de archivo
-    procedure ReplaceDialog1Find(Sender: TObject);
-    procedure ReplaceDialog1Replace(Sender: TObject);
+    procedure edChange(Sender: TObject);
+    procedure edStatusChange(Sender: TObject; Changes: TSynStatusChanges);
+    procedure edMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure edKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure edKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure edCommandProcessed(Sender: TObject;
+      var Command: TSynEditorCommand; var AChar: TUTF8Char; Data: pointer);
 
     //Estado de modificación
     procedure SetModified(valor: boolean);
@@ -153,7 +153,7 @@ type
     procedure LoadSyntaxFromFile(XMLfile: string);  //carga un archivo de sintaxis
     procedure LoadSyntaxFromPath(arc: string='');  //carga sintaxis viendo extensión de archivo
     procedure SetLanguage(lang: string);
-    constructor Create(ed0: TsynEdit; nomDef0, extDef0: string);
+    constructor Create(ed0: TsynEdit; nomDef0, extDef0: string); virtual;
     destructor Destroy; override;
   end;
 

@@ -1,4 +1,4 @@
-SynFacilUtils 1.1
+SynFacilUtils 1.2
 =================
 
 #Descripción
@@ -9,7 +9,7 @@ Incluye funciones para el manejo de los formatos de salto de línea más comunes
 
 Permite la implementación Sencilla de las funciones de Apertura, Cierre, Nuevo archivo, etc.
 
-Maneja las verificaciones de existencia de archivo, o archivo modificado, mostrando los diálogos apropiados, en cada caso. También incluye un modo de edición por columna (no implementado del todo).
+Maneja las verificaciones de existencia de archivo, o archivo modificado, mostrando los diálogos apropiados, en cada caso. 
 
 Puede manejar diversos mensajes de estado del editor, usando una barra de estado.
 
