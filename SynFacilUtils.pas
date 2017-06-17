@@ -397,7 +397,6 @@ begin
 end;
 procedure TSynFacilEditor.edKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
-var c: TUTF8char;
 begin
   //Pasa el evento
   if OnKeyDown <> nil then OnKeyDown(Sender, Key, Shift);

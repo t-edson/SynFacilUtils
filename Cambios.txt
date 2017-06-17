@@ -1,5 +1,6 @@
 1.2
 ===
+Incluye la versión 1.19 de SynFacilCompletion.
 Se quita las opciones implementadas para emular el funcionamiento en modo columna, ya
 que la nueva versión de SynEdit, ya incluye el modo de múltiples cursores.
 Se hace virtual al constructor de TSynFacilEditor.
