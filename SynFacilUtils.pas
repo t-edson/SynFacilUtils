@@ -243,7 +243,7 @@ begin
    //Lee bloque de datos
    AssignFile(ar,archivo);
    reset(ar,1);  { TODO : Dio error al abrir un archivo de solo lectura }
-   BlockRead(ar,Bolsa,TAM_BOL,Leidos);  //Lectura masiva
+   BlockRead(ar, bolsa{%H-}, TAM_BOL, Leidos{%H-});  //Lectura masiva
    CloseFile(ar);
    bolsa[Leidos] := #0; //agrega delimitador
    Pbolsa := @bolsa;    //cadena PChar

@@ -60,7 +60,7 @@ llamar a CloseCompletionWindow().
 }
 unit SynFacilCompletion;
 {$mode objfpc}{$H+}
-{$define Verbose}
+//{$define Verbose}
 interface
 uses
   Classes, SysUtils, fgl, Dialogs, XMLRead, DOM, LCLType, Graphics, Controls,
@@ -1845,7 +1845,6 @@ var
   opEve: TFaOpenEvent;
 begin
   MenuComplet.ItemList.Clear;   //inicia menú
-debugln('Llenando');
   //Prepara para llenar la lista de completado
   curEnv.LookAround(ed, CaseSensComp);  //Lee entorno.
   CurOpenEve := nil;
@@ -2052,14 +2051,20 @@ var
 begin
   //Verifica si se va a abrir la lista por tecla común. La otra opción es por un atajo
   if (vKey in [VK_BACK, VK_TAB] ) and (vShift=[]) then begin
-    //esta tecla es válida
+    //Esta tecla es válida
+    {$IFDEF Verbose}
     debugln('--Tecla válida para abrir menú: %d', [vKey]);
+    {$ENDIF}
   end else if (vUtfKey<>'') and (vUtfKey[1] in [#8,#9,' '..'@','A'..'z']) then begin
-    //esta tecla es válida
+    //Esta tecla es válida
+    {$IFDEF Verbose}
     debugln('--Tecla válida para abrir menú: %d', [vKey]);
+    {$ENDIF}
   end else begin
-    //los otros casos no se consideran que deban explorarse
+    //Los otros casos no se consideran que deban explorarse
+    {$IFDEF Verbose}
     debugln('--Tecla no válida para abrir menú: %d', [vKey]);
+    {$ENDIF}
     exit;
   end;
   //Calcula posición donde aparecerá el menú de completado

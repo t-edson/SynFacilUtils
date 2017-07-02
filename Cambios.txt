@@ -1,3 +1,8 @@
+1.21
+===
+Incluye las versiones SynfacilSyn 1.20 y SynFacilCompletion 1.20.
+
+
 1.2
 ===
 Incluye la versión 1.19 de SynFacilCompletion.
