@@ -64,7 +64,7 @@ unit SynFacilCompletion;
 interface
 uses
   Classes, SysUtils, fgl, Dialogs, XMLRead, DOM, LCLType, Graphics, Controls,
-  SynEdit, SynEditHighlighter, SynEditTypes, SynEditKeyCmds, Lazlogger,
+  SynEdit, SynEditTypes, SynEditKeyCmds, Lazlogger,
   SynFacilHighlighter, SynFacilBasic, SynCompletion;
 
 type
@@ -225,13 +225,14 @@ type
     Items : TFaCompletItems;    //Lista de las palabras disponibles para el completado
     Lists : TFaCompletionLists; //Referencias a listas
     Avails: TFaCompletItems;  //Ítems a cargar cuando se active el patrón.
-    procedure ClearItems;
     procedure LoadItems(curEnv: TFaCursorEnviron);
     procedure AddItem(txt: string; idxIcon: integer);
     procedure AddItems(lst: TStringList; idxIcon: integer);
     procedure AddItems(list: string; idxIcon: integer);
     procedure AddList(Alist: TFaCompletionList; OnlyRef: boolean);
     procedure ClearAvails;
+    procedure ClearItems;
+    procedure Clear;
     procedure AddAvail(txt: string);  //Rutina simple para agregar cadena a Avails
   public
     constructor Create(hlt0: TSynFacilSyn);
@@ -857,14 +858,13 @@ procedure TFaOpenEvent.FillFilteredIn(const env: TFaCursorEnviron; lst: TStrings
       for it in Avails do begin
         //esta no es la forma más eficiente de comparar, pero sirve por ahora.
         if str = copy(it.fCaption,1,l) then
-//          lst.Add(Avails[i]^.text);
           lst.AddObject(it.fCaption, it);
       end;
     end else begin  //ignora la caja
       str2 := UpCase(str);
       for it in Avails do begin
+//debugln('|'+it.fCaption+'|');
         if str2 = upcase(copy(it.fCaption,1,l)) then begin
-//          lst.Add(Avails[i]^.text);
           lst.AddObject(it.fCaption, it);
         end;
       end;
@@ -1057,7 +1057,8 @@ begin
   it.Caption:=txt;
   it.Replac:=txt;
   it.idxIcon:=-1;
-  Avails.Add(it);
+  Items.Add(it);  //Lo agrega primero aquí para que luego se destruya
+  Avails.Add(it);  //Porque Avails[] no destruye sus items
 end;
 //manejo de ítems
 procedure TFaOpenEvent.FilterByChar(curEnv: TFaCursorEnviron; const c: char);
@@ -1249,7 +1250,8 @@ begin
   end;
 end;
 procedure TFaOpenEvent.AddItems(list: string; idxIcon: integer);
-{Agrega una lista de ítems al evento de apertura, desde una cadena }
+{Agrega una lista de ítems al evento de apertura, desde una cadena. Los items
+deben estar separados por espacio.}
 var
   lst: TStringList;
 begin
@@ -1282,6 +1284,12 @@ procedure TFaOpenEvent.ClearItems;
 begin
   Items.Clear;
 end;
+procedure TFaOpenEvent.Clear;
+begin
+  Items.Clear;
+  Avails.Clear;
+end;
+
 constructor TFaOpenEvent.Create(hlt0: TSynFacilSyn);
 begin
   Items:= TFaCompletItems.Create(true);   //Lista con administración
