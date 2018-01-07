@@ -1,7 +1,7 @@
 1.21
 ===
 Incluye las versiones SynfacilSyn 1.20 y SynFacilCompletion 1.20.
-
+Se cambia el nombre del campo NomArc a FileName.
 
 1.2
 ===

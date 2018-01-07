@@ -69,8 +69,8 @@ type
     function GetText: string;
     procedure SetText(AValue: string);
   public
-    NomArc  : string;    //nombre del archivo
-    DelArc  : TLineEnd;   //Tipo de delimitador de fin de línea
+    FileName: string;    //Nombre del archivo
+    DelArc  : TLineEnd;  //Tipo de delimitador de fin de línea
     CodArc  : string;    //codificación de archivo
     linErr  : integer;   //línea de error. SOlo usada para marcar un error
     Error   : string;    //mensaje de error en alguna operación
@@ -591,7 +591,7 @@ begin
   if fPanFileName=AValue then Exit;
   fPanFileName:=AValue;
   if fPanFileName <> nil then begin
-    fPanFileName.Text := SysToUTF8(NomArc);
+    fPanFileName.Text := SysToUTF8(FileName);
   end;
 end;
 procedure TSynFacilEditor.SetPanForEndLin(AValue: TStatusPanel);
@@ -642,8 +642,8 @@ begin
   end;
   Error := '';    //limpia bandera de error
   if extDef<> '' then //genera nombre por defecto
-    NomArc := nomDef + '.' + extDef
-  else NomArc := nomDef;
+    FileName := nomDef + '.' + extDef
+  else FileName := nomDef;
   //verifica existencia
 //  if FileExists(Arc) then   //ya existe
 //     AbrirArchivo(Arc)  //lo abre
@@ -674,7 +674,7 @@ begin
   //carga y lee formato
   CargarArchivoLin(arc8, ed.Lines, DelArc, CodArc);
 //  StatusBar1.Panels[4].Text := CodArc;  //actualiza codificación
-  NomArc := arc0;         //fija nombre de archivo de trabajo
+  FileName := arc0;         //fija nombre de archivo de trabajo
   SetModified(false);  //Inicia estado
   linErr := 0;            //limpia línea marcada por si acaso
   ChangeFileInform;   //actualiza
@@ -687,13 +687,13 @@ procedure TSynFacilEditor.SaveFile;
 begin
   Error := '';    //limpia bandera de error
   try
-    GuardarArchivoLin(NomArc, ed.Lines, DelArc, CodArc);  //guarda en formato original
+    GuardarArchivoLin(FileName, ed.Lines, DelArc, CodArc);  //guarda en formato original
     SetModified(false);
     edChange(self);  //para que actualice el panel fPanFileSaved
     //se actualiza por si acaso, se haya guardado con otro nombre
     ChangeFileInform;   //actualiza
   except
-    Error := dic('Error guardando archivo: ') + NomArc;
+    Error := dic('Error guardando archivo: ') + FileName;
     msgErr(Error);
   end;
 end;
@@ -730,8 +730,8 @@ begin
                        mtConfirmation, [mbYes, mbNo, mbCancel],0);
     if (resp = mrCancel) or (resp = mrNo) then Exit;
   end;
-  NomArc := UTF8ToSys(arc0);   //asigna nuevo nombre
-  if ExtractFileExt(NomArc) = '' then NomArc += '.'+extDef;  //completa extensión
+  FileName := UTF8ToSys(arc0);   //asigna nuevo nombre
+  if ExtractFileExt(FileName) = '' then FileName += '.'+extDef;  //completa extensión
   SaveFile;   //lo guarda
 end;
 function TSynFacilEditor.SaveQuery: boolean;
@@ -748,7 +748,7 @@ begin
   end;
   if ed.Modified then begin
     resp := MessageDlg('', dic('El archivo %s ha sido modificado.' +  LineEnding +
-                     '¿Deseas guardar los cambios?',[ExtractFileName(NomArc)]),
+                     '¿Deseas guardar los cambios?',[ExtractFileName(FileName)]),
                        mtConfirmation, [mbYes, mbNo, mbCancel],0);
     if resp = mrCancel then begin
       Result := true;   //Sale con "true"
@@ -968,7 +968,7 @@ procedure TSynFacilEditor.ChangeFileInform;
 begin
   //actualiza información en los paneles
   if fPanFileName <> nil then begin
-    fPanFileName.Text := SysToUTF8(NomArc);
+    fPanFileName.Text := SysToUTF8(FileName);
   end;
   if fPanForEndLin <> nil then begin
     fPanForEndLin.Text:=LineEnd_To_Str(DelArc);
@@ -1110,7 +1110,7 @@ var
   XML: String;
 begin
   if arc='' then begin
-    arc := NomArc;
+    arc := FileName;
   end;
   XML := hl.LoadSyntaxFromPath(arc,LangPath);
   //marca menú
