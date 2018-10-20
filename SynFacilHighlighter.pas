@@ -90,6 +90,7 @@ type
   public    //funciones públicas de alto nivel
 //    Err       : string;         //Mensaje de error
     LangName  : string;         //Nombre del lengauje
+    FirstGen  : boolean;
     Extensions: String;         //Extensiones de archivo
     MainBlk   : TFaSynBlock;    //Bloque global
     MulTokBlk : TFaSynBlock;    //Bloque reservado para bloques multitokens
@@ -776,7 +777,7 @@ var
   nombre         : string;
   defIDENTIF     : boolean;  //bandera
   tipTok         : integer;
-  tExt, tName, tCasSen, tColBlk: TFaXMLatrib;
+  tExt, tName, tFirstGen,tCasSen, tColBlk: TFaXMLatrib;
   tCharsStart, tContent, tAtrib: TFaXMLatrib;
   tTokPos: TFaXMLatrib;
 begin
@@ -785,11 +786,13 @@ begin
   //////////// explora atributos del lenguaje//////////
   tExt  := ReadXMLParam(doc.DocumentElement, 'Ext');
   tName := ReadXMLParam(doc.DocumentElement, 'Name');
+  tFirstGen:=ReadXMLParam(doc.DocumentElement, 'FirstGen');
   tCasSen :=ReadXMLParam(doc.DocumentElement, 'CaseSensitive');
   tColBlk :=ReadXMLParam(doc.DocumentElement, 'ColorBlock');
   //carga atributos leidos
-  CheckXMLParams(doc.DocumentElement, 'Ext Name CaseSensitive ColorBlock');
+  CheckXMLParams(doc.DocumentElement, 'Ext Name FirstGen CaseSensitive ColorBlock');
   LangName := tName.val;
+  FirstGen:=tFirstGen.bol;
   Extensions := tExt.val;
   CaseSensitive := tCasSen.bol;
   case UpCase(tColBlk.val) of  //coloreado de bloque
@@ -2302,6 +2305,7 @@ begin
   tamLin := length(NewValue);
   posTok := 0;  //inicia contador
   posFin := 0;  //apunta al primer caracter
+  isLineID:=true;
   CloseThisBlk := nil;   //inicia bandera
   Next;
 end;
@@ -2329,6 +2333,14 @@ begin
   if fRange = nil then begin
       charIni:=fLine[posFin]; //guardar para tenerlo disponible en el método que se va a llamar.
       fProcTable[charIni];    //Se ejecuta la función que corresponda.
+      //
+     if (FirstGen and isLineID) then
+     begin
+        if ((charIni<=' ') or (charIni in ['0'..'9']))
+        then fTokenID := tnComment
+        else isLineID:=false;
+     end;
+     //
   end else begin
     if posFin = tamLin then begin  //para acelerar la exploración
       fTokenID:=tnEol;

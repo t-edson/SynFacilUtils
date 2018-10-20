@@ -158,7 +158,7 @@ type
     fTokenID   : integer;      //Id del token actual
     charIni    : char;          //caracter al que apunta fLine[posFin]
     posTok     : integer;       //para identificar el ordinal del token en una línea
-
+    isLineID   : boolean;       //for BASIC 1stGen
     CaseSensitive: boolean;     //Para ignorar mayúscula/minúscula
     charsIniIden: Set of char;  //caracteres iniciales de identificador
     lisTmp     : TStringList;   //lista temporal
