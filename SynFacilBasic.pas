@@ -86,6 +86,12 @@ type
                  cbLevel,    //colorea bloques por nivel
                  cbBlock);   //colorea bloques usando el color definido para cada bloque
 
+
+  TFirstGenProcess=record
+    isLineID   : boolean;       //for BASIC 1stGen
+    FirstNonWhiteEncountered:boolean;
+  end;
+
   TFaProcMetTable = procedure of object;   //Tipo de procedimiento para procesar el token de
                                          //acuerdo al caracter inicial.
   TFaProcRange = procedure of object;      //Procedimiento para procesar en medio de un rango.
@@ -158,7 +164,7 @@ type
     fTokenID   : integer;      //Id del token actual
     charIni    : char;          //caracter al que apunta fLine[posFin]
     posTok     : integer;       //para identificar el ordinal del token en una línea
-    isLineID   : boolean;       //for BASIC 1stGen
+    FirstGenProcess   : TFirstGenProcess;       //for BASIC 1stGen
     CaseSensitive: boolean;     //Para ignorar mayúscula/minúscula
     charsIniIden: Set of char;  //caracteres iniciales de identificador
     lisTmp     : TStringList;   //lista temporal

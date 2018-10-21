@@ -2305,7 +2305,6 @@ begin
   tamLin := length(NewValue);
   posTok := 0;  //inicia contador
   posFin := 0;  //apunta al primer caracter
-  isLineID:=true;
   CloseThisBlk := nil;   //inicia bandera
   Next;
 end;
@@ -2316,6 +2315,11 @@ procedure TSynFacilSyn.Next;
  quedar apuntando al inicio del siguiente token o al caracter NULL (fin de línea).}
 begin
   //verifica si hay cerrado de bloque pendiente del token anterior
+  if (postok=0) then
+  begin
+    FirstGenProcess.isLineID:=false;
+    FirstGenProcess.FirstNonWhiteEncountered:=false;
+  end;
   if CloseThisBlk<>nil then begin
     EndBlockFa(CloseThisBlk);
     if CloseThisBlk.CloseParent then begin
@@ -2334,11 +2338,23 @@ begin
       charIni:=fLine[posFin]; //guardar para tenerlo disponible en el método que se va a llamar.
       fProcTable[charIni];    //Se ejecuta la función que corresponda.
       //
-     if (FirstGen and isLineID) then
+     if FirstGen then
      begin
-        if ((charIni<=' ') or (charIni in ['0'..'9']))
-        then fTokenID := tnComment
-        else isLineID:=false;
+         if (not FirstGenProcess.FirstNonWhiteEncountered) then
+         begin
+           if (charIni>' ') then
+           begin
+             FirstGenProcess.FirstNonWhiteEncountered:=true;
+             if (charIni in ['0'..'9'])
+             then FirstGenProcess.isLineID:=true;
+           end;
+         end;
+         if (FirstGenProcess.isLineID) then
+         begin
+          if ((charIni<=' ') or (charIni in ['0'..'9']))
+          then fTokenID := tnComment
+          else FirstGenProcess.isLineID:=false;
+         end
      end;
      //
   end else begin
