@@ -161,7 +161,7 @@ end;
 procedure TForm1.editChangeFileInform;
 begin
   //actualiza nombre de archivo
-  Caption := 'Editor - ' + edit.NomArc;
+  Caption := 'Editor - ' + edit.Filename;
 end;
 
 procedure TForm1.FindDialog1Find(Sender: TObject);
