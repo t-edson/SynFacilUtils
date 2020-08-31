@@ -1,3 +1,8 @@
+1.22
+===
+Incluye las versiones SynfacilSyn 1.21 y SynFacilCompletion 1.22.
+Se cambia el nombre del campo nomDef a namDef.
+
 1.21
 ===
 Incluye las versiones SynfacilSyn 1.21 y SynFacilCompletion 1.21.

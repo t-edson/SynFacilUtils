@@ -71,11 +71,11 @@ type
   public
     FileName: string;    //Nombre del archivo
     DelArc  : TLineEnd;  //Tipo de delimitador de fin de línea
-    CodArc  : string;    //codificación de archivo
-    linErr  : integer;   //línea de error. SOlo usada para marcar un error
-    Error   : string;    //mensaje de error en alguna operación
-    extDef  : string;    //extensión por defecto para los archivos (txt, xml, ...)
-    nomDef  : string;    //nombre por defecto pàra nuevos archivos
+    CodArc  : string;    //Codificación de archivo
+    linErr  : integer;   //Línea de error. SOlo usada para marcar un error
+    Error   : string;    //Mensaje de error en alguna operación
+    extDef  : string;    //Extensión por defecto para los archivos (txt, xml, ...)
+    namDef  : string;    //Nombre por defecto para nuevos archivos
     RecentFiles: TStringList;  //Lista de archivos recientes
     hl      : TSynFacilComplet; //Resaltador.
     //eventos
@@ -642,8 +642,8 @@ begin
   end;
   Error := '';    //limpia bandera de error
   if extDef<> '' then //genera nombre por defecto
-    FileName := nomDef + '.' + extDef
-  else FileName := nomDef;
+    FileName := namDef + '.' + extDef
+  else FileName := namDef;
   //verifica existencia
 //  if FileExists(Arc) then   //ya existe
 //     AbrirArchivo(Arc)  //lo abre
@@ -1153,7 +1153,7 @@ begin
 //  RecentFiles := TStringList.Create;
   MaxRecents := 1;   //Inicia con 1
   //guarda parámetros
-  nomDef := nomDef0;
+  namDef := nomDef0;
   extDef := extDef0;
   NewFile;   //Inicia editor con archivo vacío
 end;
