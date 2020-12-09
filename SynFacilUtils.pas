@@ -21,7 +21,8 @@ type
              );
 
   { TSynFacilEditor }
-  TEventoArchivo = procedure of object;
+  TEventFile = procedure of object;
+  TEventLangSelec = procedure(langName, xmlFile: string) of object;
 
   //Define las propiedades que debe tener un texto que se está editando
   TSynFacilEditor = class
@@ -78,13 +79,14 @@ type
     namDef  : string;    //Nombre por defecto para nuevos archivos
     RecentFiles: TStringList;  //Lista de archivos recientes
     hl      : TSynFacilComplet; //Resaltador.
-    //eventos
-    OnChangeEditorState:TEventoArchivo;  {Cuando cambia el estado de modificado, con opción
+    //Eventos
+    OnChangeEditorState:TEventFile;  {Cuando cambia el estado de modificado, con opción
                           "Undo", con "Redo", con opción "Copiar", "Cortar", "Pegar"}
-    OnChangeFileInform: TEventoArchivo;  {Cuando cambia información de nombre de archivo, tipo
+    OnChangeFileInform: TEventFile;  {Cuando cambia información de nombre de archivo, tipo
                            de delimitador de línea o tipo de codificación}
-    OnSelectionChange : TEventoArchivo; //Cuando cambia el área seleccionada
-    OnFileOpened : TEventoArchivo; //Cuando se ha cargado un nuevo archivo
+    OnSelectionChange : TEventFile; //Cuando cambia el área seleccionada
+    OnFileOpened      : TEventFile; //Cuando se ha cargado un nuevo archivo
+    OnMenLangSelected : TEventLangSelec; //Languaje seleccionado del menú, cuando se usa InitMenuLanguages().
     //Reflejo de los eventos de TSynEdit:
     OnEditChange : TNotifyEvent;
     OnMouseDown  : TMouseEvent;
@@ -152,7 +154,6 @@ type
     procedure InitMenuLanguages(menLanguage0: TMenuItem; LangPath0: string);
     procedure LoadSyntaxFromFile(XMLfile: string);  //carga un archivo de sintaxis
     procedure LoadSyntaxFromPath(arc: string='');  //carga sintaxis viendo extensión de archivo
-    procedure SetLanguage(lang: string);
     constructor Create(ed0: TsynEdit; nomDef0, extDef0: string); virtual;
     destructor Destroy; override;
   end;
@@ -309,15 +310,15 @@ begin
   //realiza las conversiones necesarias, ya que "ed", solo maneja UTF-8
   if CodArc = 'cp1252' then begin
     Lineas.Text := CP1252ToUTF8(Lineas.Text);
-    Result := 'Convertido a UTF-8';
+    Result := 'Converted to UTF-8';
   end else if CodArc = 'utf8bom' then begin
     Lineas.Text := UTF8BOMToUTF8(Lineas.Text);
-    Result := 'Convertido a UTF-8';
+    Result := 'Converted to UTF-8';
   end else if CodArc = 'ISO-8859-1' then begin
     Lineas.Text := ISO_8859_1ToUTF8(Lineas.Text);
-    Result := 'Convertido a UTF-8';
+    Result := 'Converted to UTF-8';
   end else if CodArc = 'utf8' then begin
-    Result := 'Sin convertir';  //no se cambia
+    Result := 'Without conversion';  //no se cambia
   end else begin  //cualquier otra codificación se asume UTF-8 y no se cambia
     //En windows tal vez debería cargarse cp1252 por defecto.
     Result := 'utf8';
@@ -355,7 +356,7 @@ begin
   end else if CodArc = 'ISO-8859-1' then begin
     StringToFile(UTF8ToISO_8859_1(Lineas.Text),arc0);
   end else begin //si es otra codificación, se guarda como UTF-8
-    MsgExc('¡Codificación de archivo desconocida!');
+    MsgExc('Unknown file encoding');
     StringToFile(Lineas.Text,arc0);
   end;
 end;
@@ -381,7 +382,7 @@ end;
 procedure TSynFacilEditor.edChange(Sender: TObject);
 begin
   if fPanFileSaved <> nil then begin
-    if GetModified then fPanFileSaved.Text:=dic('Sin Guardar') else fPanFileSaved.Text:=dic('Guardado');
+    if GetModified then fPanFileSaved.Text:='Modified' else fPanFileSaved.Text:='Saved';
   end;
   //Ha habido cambio de contenido
   if OnChangeEditorState<>nil then OnChangeEditorState;  //para iniciar controles
@@ -437,7 +438,7 @@ begin
   RecentFiles := RecentList;  //gaurda referencia a lista
   MaxRecents := MaxRecents0;
   //configura menú
-  mnRecents.Caption:= dic('&Recientes');
+  mnRecents.Caption:= '&Recents';
   mnRecents.OnClick:=@ActualMenusReciente;
   for i:= 1 to MaxRecents do begin
     AddItemToMenu(mnRecents, '&'+IntToStr(i), @RecentClick);
@@ -459,7 +460,7 @@ begin
   if RecentFiles = nil then exit;
   //proteciión
   if RecentFiles.Count = 0 then begin
-    mnRecents[0].Caption:=dic('No hay archivos');
+    mnRecents[0].Caption:='No files';
     mnRecents[0].Enabled:=false;
     for i:= 1 to mnRecents.Count-1 do begin
       mnRecents[i].Visible:=false;
@@ -514,7 +515,7 @@ begin
 
   encon := ed.SearchReplace(buscado,'',opciones);
   if encon = 0 then
-    MsgBox('No se encuentra: %s', [buscado]);
+    MsgBox('No found: %s', [buscado]);
 end;
 procedure TSynFacilEditor.ReplaceDialog1Replace(Sender: TObject);
 var
@@ -533,7 +534,7 @@ begin
     //se ha pedido reemplazar todo
     encon := ed.SearchReplace(buscado,ReplaceDialog1.ReplaceText,
                               opciones+[ssoReplaceAll]);  //reemplaza
-    msgbox('Se reemplazaron %d ocurrencias.',[encon]);
+    msgbox('%d occurrences were replaced.',[encon]);
     exit;
   end;
   //reemplazo con confirmación
@@ -541,8 +542,8 @@ begin
   encon := ed.SearchReplace(buscado,'',opciones);  //búsqueda
   while encon <> 0 do begin
       //pregunta
-      r := Application.MessageBox(Pchar(dic('¿Reemplazar esta ocurrencia?')),
-                Pchar(dic('Reemplazo')), MB_YESNOCANCEL);
+      r := Application.MessageBox(Pchar('Replace this?'),
+                Pchar('Replace'), MB_YESNOCANCEL);
       if r = IDCANCEL then exit;
       if r = IDYES then begin
         ed.TextBetweenPoints[ed.BlockBegin,ed.BlockEnd] := ReplaceDialog1.ReplaceText;
@@ -550,7 +551,7 @@ begin
       //busca siguiente
       encon := ed.SearchReplace(buscado,'',opciones);  //búsca siguiente
   end;
-  MsgBox('No se encuentra: %s', [buscado]);
+  MsgBox('No found: %s', [buscado]);
 end;
 procedure TSynFacilEditor.SetModified(valor: boolean);
 //Cambia el valor del campo "Modified", del editor
@@ -560,7 +561,7 @@ begin
     ed.Modified := valor;    //Fija valor
     //dispara evento
     if fPanFileSaved <> nil then begin
-      if GetModified then fPanFileSaved.Text:=dic('Sin Guardar') else fPanFileSaved.Text:=dic('Guardado');
+      if GetModified then fPanFileSaved.Text:='Modified' else fPanFileSaved.Text:='Saved';
     end;
     if OnChangeEditorState<>nil then OnChangeEditorState;
   end;
@@ -582,7 +583,7 @@ begin
   if fPanFileSaved=AValue then Exit;
   fPanFileSaved:=AValue;
   if fPanFileSaved <> nil then begin
-    if GetModified then fPanFileSaved.Text:=dic('Sin Guardar') else fPanFileSaved.Text:=dic('Guardado');
+    if GetModified then fPanFileSaved.Text:='Modified' else fPanFileSaved.Text:='Saved';
   end;
 end;
 
@@ -667,7 +668,7 @@ begin
   arc0 := UTF8ToSys(arc8);   //pone en modo ANSI
   //verifica existencia de archivo
   if not FileExists(arc0) then begin
-    Error := dic('No se encuentra el archivo: ') + arc0;
+    Error := 'File not found: ' + arc0;
     msgErr(Error);
     Exit;                    //sale
   end;
@@ -693,7 +694,7 @@ begin
     //se actualiza por si acaso, se haya guardado con otro nombre
     ChangeFileInform;   //actualiza
   except
-    Error := dic('Error guardando archivo: ') + FileName;
+    Error := 'Error saving file: ' + FileName;
     msgErr(Error);
   end;
 end;
@@ -725,8 +726,7 @@ begin
   end;
   arc0 := SaveDialog1.FileName;
   if FileExists(arc0) then begin
-    resp := MessageDlg('', dic('El archivo %s ya existe.' + LineEnding +
-                  '¿Deseas sobreescribirlo?',[arc0]),
+    resp := MessageDlg('', Format('File %s already exists.' + LineEnding + 'Overwrite?',[arc0]),
                        mtConfirmation, [mbYes, mbNo, mbCancel],0);
     if (resp = mrCancel) or (resp = mrNo) then Exit;
   end;
@@ -742,13 +742,13 @@ var resp: integer;
 begin
   Result := false;
   if ed = nil then begin
-    Error := dic('Error Interno: Editor no inicializado.');
+    Error := 'Internal: Not initialized Editor.';
     msgErr(Error);
     exit;
   end;
   if ed.Modified then begin
-    resp := MessageDlg('', dic('El archivo %s ha sido modificado.' +  LineEnding +
-                     '¿Deseas guardar los cambios?',[ExtractFileName(FileName)]),
+    resp := MessageDlg('', Format('File %s, has been modified.' + LineEnding + 'Save?',
+                               [ExtractFileName(FileName)]),
                        mtConfirmation, [mbYes, mbNo, mbCancel],0);
     if resp = mrCancel then begin
       Result := true;   //Sale con "true"
@@ -784,7 +784,7 @@ begin
 
   encon := ed.SearchReplace(buscado,'',opciones);
   if encon = 0 then
-    MsgBox('No se encuentra: %s', [buscado]);
+    MsgBox('No found: %s', [buscado]);
 end;
 procedure TSynFacilEditor.ReplaceDialog;
 //Realiza una búsqueda en el texto del editor, usando el ´diálogo de búsqeudas.
@@ -878,15 +878,15 @@ begin
 //      fSelFuente.ShowModal;
   end;
   If fSelFuente.optSel.Checked Then begin  //seleción
-    s := InputBox('Filtrar líneas:','Ingrese texto: ','');
+    s := InputBox('Filter lines:','Enter text: ','');
     if s = '' then exit;
     for i:= ed.BlockBegin.y to ed.BlockEnd.y do
       if AnsiContainsText(ed.Lines[i],s) then sal.Add(ed.Lines[i]);
   end Else begin                           //todo
     if ed.BlockEnd.y = ed.BlockBegin.y then  //hay texto seleccionado, suguiere
-      s := InputBox('Filtrar líneas:','Ingrese texto: ',ed.SelText)
+      s := InputBox('Filter lines:','Enter text: ',ed.SelText)
     else
-      s := InputBox('Filtrar líneas:','Ingrese texto: ','');
+      s := InputBox('Filter lines:','Enter text: ','');
     if s = '' then exit;
     for i:= 0 to ed.Lines.Count-1 do
       if AnsiContainsText(ed.Lines[i],s) then sal.Add(ed.Lines[i]);
@@ -909,7 +909,7 @@ begin
   if mnLineEnding0 = nil then exit;
   mnLineEnding := mnLineEnding0;  //guarda referencia a menú
   //configura menú
-  mnLineEnding.Caption:= dic('Fin de Línea');
+  mnLineEnding.Caption:= 'Line Ending';
   mnLineEnding.Clear;
   //llena opciones
   AddItemToMenu(mnLineEnding, LineEnd_To_Str(TAR_UNIX), @LineEndingClick);
@@ -944,7 +944,7 @@ begin
   if mnEncoding0 = nil then exit;
   mnEncoding := mnEncoding0;  //guarda referencia a menú
   //configura menú
-  mnEncoding.Caption:= dic('Codificación');
+  mnEncoding.Caption:= 'Encoding';
   mnEncoding.Clear;
   //llena opciones
   AddItemToMenu(mnEncoding, 'utf8', @EncodingClick);
@@ -1038,7 +1038,7 @@ end;
 procedure TSynFacilEditor.RefreshPanCursor;
 begin
   if fPanCursorPos <> nil then
-    fPanCursorPos.Text:= dic('fil=%d, col=%d',[ed.CaretY, ed.CaretX]);
+    fPanCursorPos.Text:= Format('row=%d col=%d', [ed.CaretY, ed.CaretX]);
 end;
 procedure TSynFacilEditor.InitMenuLanguages(menLanguage0: TMenuItem; LangPath0: string);
 //Inicia un menú con la lista de archivos XML (que representan a lenguajes) que hay
@@ -1053,7 +1053,7 @@ begin
   if (LangPath<>'') and (LangPath[length(LangPath)] <> DirectorySeparator) then
      LangPath+=DirectorySeparator;
   //configura menú
-  mnLanguages.Caption:= dic('&Lenguajes');
+  mnLanguages.Caption:= '&Languages';
   //explora archivos
   Hay := FindFirst(LangPath + '*.xml', faAnyFile - faDirectory, SR) = 0;
   while Hay do begin
@@ -1065,16 +1065,17 @@ end;
 procedure TSynFacilEditor.DoSelectLanguage(Sender: TObject);
 //Se ha seleccionado un lenguaje desde el menú.
 var
-  arcXML: String;
+  XMLfile: String;
   it: TMenuItem;
 begin
   it := TMenuItem(Sender);
-  arcXML := LangPath + RightStr(it.Caption,length(it.Caption)-1 ) + '.xml';
-  hl.LoadFromFile(arcXML);  //carga la sintaxis indicada
+  XMLfile := LangPath + RightStr(it.Caption, length(it.Caption)-1 ) + '.xml';
+  hl.LoadFromFile(XMLfile);  //carga la sintaxis indicada
   if fPanLangName<> nil then begin
     fPanLangName.Text:= hl.LangName;
   end;
   CheckOnlyOneItem(it); //marca menú
+  if OnMenLangSelected<>nil then OnMenLangSelected(hl.LangName, XMLfile);
 end;
 procedure TSynFacilEditor.CheckLanguageMenu(XMLfile: string);
 //Marca el ítem del menú de lenguaje que corresponde al nombre de archivo indicado.
@@ -1132,7 +1133,7 @@ begin
   hl.Rebuild;  //reconstruye
   CheckLanguageMenu('');  //actualiza menú
   if fPanLangName<> nil then begin
-    fPanLangName.Text:= dic('Sin lenguaje');
+    fPanLangName.Text:= 'No language';
   end;
 end;
 
@@ -1163,39 +1164,6 @@ begin
   hl.Free;
 //  RecentFiles.Free;
   inherited Destroy;
-end;
-procedure TSynFacilEditor.SetLanguage(lang: string);
-//Rutina de traducción
-begin
-  case lowerCase(lang) of
-  'es': begin
-      dicClear;  //esttán en este idioma
-    end;
-  'en': begin
-      //configura mensajes
-      dicSet('fil=%d, col=%d','row=%d col=%d');
-      dicSet('Guardado','Saved');
-      dicSet('Sin Guardar','Modified');
-      dicSet('El archivo %s ha sido modificado.' +  LineEnding + '¿Deseas guardar los cambios?',
-             'File %s, has been modified.' + LineEnding + 'Save?');
-      dicSet('No se encuentra el archivo: ', 'File not found: ');
-      dicSet('Error guardando archivo: ', 'Error saving file: ');
-      dicSet('El archivo %s ya existe.' + LineEnding + '¿Deseas sobreescribirlo?',
-             'File %s already exists.' + LineEnding + 'Overwrite?');
-      dicSet('&Recientes', '&Recents');
-      dicSet('&Lenguajes', '&Languages');
-      dicSet('No hay archivos', 'No files');
-      dicSet('Error Interno: Editor no inicializado.', 'Internal: Not initialized Editor.');
-      dicSet('Sin lenguaje', 'No language');
-      dicSet('¡Codificación de archivo desconocida!','Unknown file encoding');
-      dicSet('Fin de Línea','Line Ending');
-      dicSet('Codificación','Encoding');
-      dicSet('No se encuentra: %s','No found: %s');
-      dicSet('Se reemplazaron %d ocurrencias.','%d occurrences were replaced.');
-      dicSet('¿Reemplazar esta ocurrencia?','Replace this?');
-      dicSet('Reemplazo','Replace');
-    end;
-  end;
 end;
 
 initialization

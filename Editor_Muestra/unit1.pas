@@ -109,7 +109,7 @@ implementation
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   SetLanguage('en');
-  edit.SetLanguage('en');
+//  edit.SetLanguage('en');
   edit := TSynFacilEditor.Create(SynEdit1, 'SinNombre', 'pas');
   edit.OnChangeEditorState:=@ChangeEditorState;
   edit.OnChangeFileInform:=@editChangeFileInform;

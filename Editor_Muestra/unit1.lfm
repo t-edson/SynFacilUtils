@@ -1,32 +1,33 @@
 object Form1: TForm1
   Left = 323
-  Height = 325
+  Height = 406
   Top = 243
-  Width = 516
+  Width = 645
   AllowDropFiles = True
   Caption = 'Form1'
-  ClientHeight = 305
-  ClientWidth = 516
+  ClientHeight = 381
+  ClientWidth = 645
+  DesignTimePPI = 120
   Menu = MainMenu1
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnDropFiles = FormDropFiles
-  LCLVersion = '1.8.0.6'
+  LCLVersion = '2.0.10.0'
   inline SynEdit1: TSynEdit
     Left = 0
-    Height = 256
-    Top = 26
-    Width = 516
+    Height = 321
+    Top = 32
+    Width = 645
     Align = alClient
-    Font.Height = -13
+    Font.Height = -16
     Font.Name = 'Courier New'
     Font.Pitch = fpFixed
     Font.Quality = fqNonAntialiased
     ParentColor = False
     ParentFont = False
     TabOrder = 0
-    Gutter.Width = 57
+    Gutter.Width = 72
     Gutter.MouseActions = <>
     RightGutter.Width = 0
     RightGutter.MouseActions = <>
@@ -478,11 +479,11 @@ object Form1: TForm1
     LineHighlightColor.Foreground = clNone
     inline SynLeftGutterPartList1: TSynGutterPartList
       object SynGutterMarks1: TSynGutterMarks
-        Width = 24
+        Width = 30
         MouseActions = <>
       end
       object SynGutterLineNumber1: TSynGutterLineNumber
-        Width = 17
+        Width = 21
         MouseActions = <>
         MarkupInfo.Background = clBtnFace
         MarkupInfo.Foreground = clNone
@@ -492,18 +493,19 @@ object Form1: TForm1
         LeadingZeros = False
       end
       object SynGutterChanges1: TSynGutterChanges
-        Width = 4
+        Width = 5
         MouseActions = <>
         ModifiedColor = 59900
         SavedColor = clGreen
       end
       object SynGutterSeparator1: TSynGutterSeparator
-        Width = 2
+        Width = 3
         MouseActions = <>
         MarkupInfo.Background = clWhite
         MarkupInfo.Foreground = clGray
       end
       object SynGutterCodeFolding1: TSynGutterCodeFolding
+        Width = 13
         MouseActions = <>
         MarkupInfo.Background = clNone
         MarkupInfo.Foreground = clGray
@@ -514,37 +516,38 @@ object Form1: TForm1
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Height = 23
-    Top = 282
-    Width = 516
+    Height = 28
+    Top = 353
+    Width = 645
     Panels = <    
       item
-        Width = 70
+        Width = 88
       end    
       item
-        Width = 80
+        Width = 100
       end    
       item
-        Width = 70
+        Width = 88
       end    
       item
-        Width = 70
+        Width = 88
       end    
       item
-        Width = 80
+        Width = 100
       end    
       item
-        Width = 50
+        Width = 62
       end>
+    ParentFont = False
     SimplePanel = False
   end
   object ToolBar1: TToolBar
     Left = 0
-    Height = 26
     Top = 0
-    Width = 516
+    Width = 645
     Caption = 'ToolBar1'
     Images = ImageList1
+    ParentFont = False
     TabOrder = 2
     object ToolButton1: TToolButton
       Left = 1
@@ -552,64 +555,64 @@ object Form1: TForm1
       Action = acArcNuevo
     end
     object ToolButton2: TToolButton
-      Left = 24
+      Left = 30
       Top = 2
       Action = acArcAbrir
     end
     object ToolButton3: TToolButton
-      Left = 47
+      Left = 59
       Top = 2
       Action = acArcGuardar
     end
     object ToolButton4: TToolButton
-      Left = 70
+      Left = 88
       Top = 2
       Action = acArcGuaCom
     end
     object ToolButton5: TToolButton
-      Left = 93
-      Height = 22
+      Left = 117
+      Height = 28
       Top = 2
       Caption = 'ToolButton5'
       Style = tbsSeparator
     end
     object ToolButton6: TToolButton
-      Left = 101
+      Left = 127
       Top = 2
       Action = acEdUndo
     end
     object ToolButton7: TToolButton
-      Left = 124
+      Left = 156
       Top = 2
       Action = acEdRedo
     end
     object ToolButton8: TToolButton
-      Left = 147
+      Left = 185
       Top = 2
       Action = acEdCut
     end
     object ToolButton9: TToolButton
-      Left = 170
+      Left = 214
       Top = 2
       Action = acEdCopy
     end
     object ToolButton10: TToolButton
-      Left = 193
+      Left = 243
       Top = 2
       Action = acEdPaste
     end
   end
   object OpenDialog1: TOpenDialog
-    left = 136
-    top = 32
+    Left = 170
+    Top = 40
   end
   object SaveDialog1: TSaveDialog
-    left = 200
-    top = 32
+    Left = 250
+    Top = 40
   end
   object ImageList1: TImageList
-    left = 132
-    top = 76
+    Left = 165
+    Top = 95
     Bitmap = {
       4C691B0000001000000010000000A9715152DDB18DBCDCA67AC4DAA47AC4D8A2
       79C4D49E75C4D29D73C4CF9A72C4CE9970C4CB966FC4C9946CC4C49A7ABCA971
@@ -1480,8 +1483,8 @@ object Form1: TForm1
   end
   object ActionList: TActionList
     Images = ImageList1
-    left = 200
-    top = 76
+    Left = 250
+    Top = 95
     object acArcNuevo: TAction
       Category = 'Arc'
       Caption = '&Nuevo'
@@ -1606,8 +1609,8 @@ object Form1: TForm1
   end
   object MainMenu1: TMainMenu
     Images = ImageList1
-    left = 64
-    top = 80
+    Left = 80
+    Top = 100
     object mnArchivo: TMenuItem
       Caption = '&Archivo'
       object MenuItem3: TMenuItem
@@ -1678,42 +1681,6 @@ object Form1: TForm1
       Caption = '&Herramientas'
       object MenuItem23: TMenuItem
         Caption = '&Configuración'
-        Bitmap.Data = {
-          36040000424D3604000000000000360000002800000010000000100000000100
-          2000000000000004000064000000640000000000000000000000FFFFFF00D587
-          57D5D58351FFD17D4BFFD17945AFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00D99165CCDFA4
-          81FFEAC2ABFFEAC0A8FFDC9971FFD17B47AFFFFFFF00FFFFFF00FFFFFF00FFFF
-          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00DB976FFFEDC8
-          B3FFE7B89BFFE6B498FFEAC3ABFFDE9C73FFD17D49AFFFFFFF00FFFFFF00FFFF
-          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00DD9F79FFEDCC
-          B7FFE8BDA3FFE4B192FFE6B69AFFEAC3ACFFDE9C74FFD37F4DACFFFFFF00FFFF
-          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00DFA57F92E6B3
-          94FFEECCB8FFE9BEA5FFE5B394FFE6B79BFFEAC4ADFFDE9E78FFD3814FACFFFF
-          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00DFA5
-          8392E6B498FFEECDBAFFE9BFA5FFE5B496FFE7B99DFFEBC6AEFFDE9F79FFD583
-          51AAFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-          FF00E1A78592E6B799FFEECEBBFFE9C0A7FFE8BDA3FFECC8B3FFDFA481FFD289
-          5DC9FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-          FF00FFFFFF00E1A98792E6B79CFFEFCFBCFFEECEBAFFE2AE8CFFD29B7BFF8888
-          88F786868623FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-          FF00FFFFFF00FFFFFF00E1A98992E7B99CFFE6B698FFD8A98CFFD2D2D2FFB5B5
-          B5FF898989FE878787FB858585FB838383D681818170FFFFFF00FFFFFF00FFFF
-          FF00FFFFFF00FFFFFF00FFFFFF00E3AD8B92DAA788CF929292FBC7C7C7FFCCCC
-          CCFFC7C7C7FFC6C6C6FFC3C3C3FFC0C0C0FF848484F582828270FFFFFF00FFFF
-          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF0095959548939393FED4D4
-          D4FFC8C8C8FFBCBCBCFFBABABAFFC2C2C2FFC4C4C4FF858585D6FFFFFF00FFFF
-          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00969696FCDDDD
-          DDFFC5C5C5FF8F8F8FC18D8D8DC3ACACACFFD7D7D7FF878787FBFFFFFF00FFFF
-          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00989898FBE4E4
-          E4FFCFCFCFFF929292C2FFFFFF008E8E8EFF8C8C8CFF8A8A8AFBFFFFFF00FFFF
-          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF009B9B9BD6E2E2
-          E2FFE7E7E7FFB9B9B9FF939393FFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF009D9D9D709B9B
-          9BF5E4E4E4FFEEEEEEFF969696FFFFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
-          FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF009E9E
-          9E709C9C9CD69B9B9BFB999999FBFFFFFF00FFFFFF00FFFFFF00
-        }
         Hint = 'Configurar'
         ImageIndex = 16
       end
@@ -1721,7 +1688,7 @@ object Form1: TForm1
   end
   object FindDialog1: TFindDialog
     OnFind = FindDialog1Find
-    left = 272
-    top = 76
+    Left = 340
+    Top = 95
   end
 end
