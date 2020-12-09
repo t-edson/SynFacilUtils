@@ -1,4 +1,4 @@
-SynFacilUtils 1.22
+SynFacilUtils 1.23
 ==================
 
 #Descripción
