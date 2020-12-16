@@ -1,7 +1,7 @@
 object Form1: TForm1
-  Left = 323
+  Left = 338
   Height = 406
-  Top = 243
+  Top = 242
   Width = 645
   AllowDropFiles = True
   Caption = 'Form1'
@@ -552,22 +552,22 @@ object Form1: TForm1
     object ToolButton1: TToolButton
       Left = 1
       Top = 2
-      Action = acArcNuevo
+      Action = acFilNew
     end
     object ToolButton2: TToolButton
       Left = 30
       Top = 2
-      Action = acArcAbrir
+      Action = acFilOpen
     end
     object ToolButton3: TToolButton
       Left = 59
       Top = 2
-      Action = acArcGuardar
+      Action = acFilSave
     end
     object ToolButton4: TToolButton
       Left = 88
       Top = 2
-      Action = acArcGuaCom
+      Action = acFilSaveAs
     end
     object ToolButton5: TToolButton
       Left = 117
@@ -577,42 +577,42 @@ object Form1: TForm1
       Style = tbsSeparator
     end
     object ToolButton6: TToolButton
-      Left = 127
+      Left = 125
       Top = 2
       Action = acEdUndo
     end
     object ToolButton7: TToolButton
-      Left = 156
+      Left = 154
       Top = 2
       Action = acEdRedo
     end
     object ToolButton8: TToolButton
-      Left = 185
+      Left = 183
       Top = 2
       Action = acEdCut
     end
     object ToolButton9: TToolButton
-      Left = 214
+      Left = 212
       Top = 2
       Action = acEdCopy
     end
     object ToolButton10: TToolButton
-      Left = 243
+      Left = 241
       Top = 2
       Action = acEdPaste
     end
   end
   object OpenDialog1: TOpenDialog
-    Left = 170
+    Left = 184
     Top = 40
   end
   object SaveDialog1: TSaveDialog
-    Left = 250
+    Left = 280
     Top = 40
   end
   object ImageList1: TImageList
-    Left = 165
-    Top = 95
+    Left = 184
+    Top = 112
     Bitmap = {
       4C691B0000001000000010000000A9715152DDB18DBCDCA67AC4DAA47AC4D8A2
       79C4D49E75C4D29D73C4CF9A72C4CE9970C4CB966FC4C9946CC4C49A7ABCA971
@@ -1483,147 +1483,133 @@ object Form1: TForm1
   end
   object ActionList: TActionList
     Images = ImageList1
-    Left = 250
-    Top = 95
-    object acArcNuevo: TAction
-      Category = 'Arc'
-      Caption = '&Nuevo'
-      Hint = 'Nuevo Archivo'
+    Left = 280
+    Top = 112
+    object acFilNew: TAction
+      Category = 'FIl'
+      Caption = '&New'
+      Hint = 'New File'
       ImageIndex = 13
-      OnExecute = acArcNuevoExecute
+      OnExecute = acFilNewExecute
     end
-    object acArcAbrir: TAction
-      Category = 'Arc'
-      Caption = '&Abrir...'
-      Hint = 'Abrir Archivo'
+    object acFilOpen: TAction
+      Category = 'FIl'
+      Caption = '&Open...'
+      Hint = 'Open File'
       ImageIndex = 9
-      OnExecute = acArcAbrirExecute
+      OnExecute = acFilOpenExecute
       ShortCut = 16449
     end
-    object acArcGuardar: TAction
-      Category = 'Arc'
-      Caption = '&Guardar'
-      Hint = 'Guardar Archivo'
+    object acFilSave: TAction
+      Category = 'FIl'
+      Caption = '&Save'
+      Hint = 'Save File'
       ImageIndex = 6
-      OnExecute = acArcGuardarExecute
+      OnExecute = acFilSaveExecute
       ShortCut = 16455
     end
-    object acArcGuaCom: TAction
-      Category = 'Arc'
-      Caption = 'G&uardar Como...'
-      Hint = 'Guardar como...'
+    object acFilSaveAs: TAction
+      Category = 'FIl'
+      Caption = 'Save &As...'
+      Hint = 'Save as..'
       ImageIndex = 12
-      OnExecute = acArcGuaComExecute
+      OnExecute = acFilSaveAsExecute
     end
-    object acArcSalir: TAction
-      Category = 'Arc'
-      Caption = '&Salir'
-      Hint = 'Salir'
+    object acFilExit: TAction
+      Category = 'FIl'
+      Caption = '&Quit'
+      Hint = 'Quit'
       ImageIndex = 7
-      OnExecute = acArcSalirExecute
+      OnExecute = acFilExitExecute
     end
     object acEdUndo: TAction
       Category = 'Edit'
-      Caption = '&Deshacer'
-      Hint = 'Deshacer'
+      Caption = '&Undo'
+      Hint = 'Undo'
       ImageIndex = 1
       ShortCut = 16474
     end
     object acEdRedo: TAction
       Category = 'Edit'
-      Caption = '&Rehacer'
-      Hint = 'Rehacer'
+      Caption = '&Redo'
+      Hint = 'Redo'
       ImageIndex = 2
       ShortCut = 24666
     end
     object acEdCut: TEditCut
       Category = 'Edit'
-      Caption = 'Cor&tar'
-      Hint = 'Cortar'
+      Caption = 'C&ut'
+      Hint = 'Cut'
       ImageIndex = 3
       ShortCut = 16472
     end
     object acEdCopy: TEditCopy
       Category = 'Edit'
-      Caption = '&Copiar'
-      Hint = 'Copiar'
+      Caption = '&Copy'
+      Hint = 'Copy'
       ImageIndex = 10
       ShortCut = 16451
     end
     object acEdPaste: TEditPaste
       Category = 'Edit'
-      Caption = '&Pegar'
-      Hint = 'Pegar'
+      Caption = '&Paste'
+      Hint = 'Paste'
       ImageIndex = 11
       ShortCut = 16470
     end
     object acEdSelecAll: TAction
       Category = 'Edit'
-      Caption = 'Seleccionar &Todo'
-      Hint = 'Selecciona todo el texto'
+      Caption = 'Selec &All'
+      Hint = 'Select All'
       ShortCut = 16453
     end
-    object acEdModCol: TAction
-      Category = 'Edit'
-      Caption = 'Modo Columna'
-      Hint = 'Entra al modo columna'
-      ImageIndex = 15
-    end
-    object acVerNumLin: TAction
-      Category = 'Ver'
-      Caption = 'Ver &Núm. de Línea'
-    end
-    object acVerBarEst: TAction
-      Category = 'Ver'
-      Caption = 'Ver Barra de &Estado'
-    end
-    object acBusBuscar: TAction
-      Category = 'Search'
-      Caption = 'Buscar...'
+    object acSrcFind: TAction
+      Category = 'Src'
+      Caption = '&Find...'
+      Hint = 'Find'
       ImageIndex = 17
-      OnExecute = acBusBuscarExecute
-      ShortCut = 16450
+      OnExecute = acSrcFindExecute
+      ShortCut = 16454
     end
-    object acBusBusSig: TAction
-      Category = 'Search'
-      Caption = 'Buscar &Siguiente'
+    object acSrcFindNx: TAction
+      Category = 'Src'
+      Caption = 'Find &Next'
+      Hint = 'Find next'
       ImageIndex = 18
-      OnExecute = acBusBusSigExecute
+      OnExecute = acSrcFindNxExecute
       ShortCut = 114
     end
-    object acBusReemp: TAction
-      Category = 'Search'
-      Caption = '&Remplazar...'
+    object acSrcReplace: TAction
+      Category = 'Src'
+      Caption = '&Remplace...'
+      Hint = 'Replace'
+      OnExecute = acSrcReplaceExecute
       ShortCut = 16466
     end
-    object acVerPanArc: TAction
-      Category = 'Ver'
-      Caption = 'Panel de &Archivos'
-      ShortCut = 113
-    end
-    object AcHerConfig: TAction
-      Category = 'Her'
-      Caption = 'AcHerConfig'
+    object AcToolSettings: TAction
+      Category = 'Tool'
+      Caption = 'Settings'
+      Hint = 'Settings'
       ImageIndex = 16
     end
   end
   object MainMenu1: TMainMenu
     Images = ImageList1
-    Left = 80
-    Top = 100
+    Left = 88
+    Top = 112
     object mnArchivo: TMenuItem
-      Caption = '&Archivo'
+      Caption = '&File'
       object MenuItem3: TMenuItem
-        Action = acArcNuevo
+        Action = acFilNew
       end
       object MenuItem4: TMenuItem
-        Action = acArcAbrir
+        Action = acFilOpen
       end
       object MenuItem5: TMenuItem
-        Action = acArcGuardar
+        Action = acFilSave
       end
       object MenuItem6: TMenuItem
-        Action = acArcGuaCom
+        Action = acFilSaveAs
       end
       object mnRecientes: TMenuItem
         Caption = 'Recientes'
@@ -1632,11 +1618,11 @@ object Form1: TForm1
         Caption = '-'
       end
       object MenuItem8: TMenuItem
-        Action = acArcSalir
+        Action = acFilExit
       end
     end
     object mnEdicion: TMenuItem
-      Caption = '&Edicion'
+      Caption = '&Edit'
       object MenuItem9: TMenuItem
         Action = acEdUndo
       end
@@ -1663,32 +1649,26 @@ object Form1: TForm1
       end
     end
     object mnBuscar: TMenuItem
-      Caption = '&Buscar'
+      Caption = '&Search'
       object MenuItem1: TMenuItem
-        Action = acBusBuscar
+        Action = acSrcFind
       end
       object MenuItem2: TMenuItem
-        Action = acBusBusSig
+        Action = acSrcFindNx
       end
       object MenuItem17: TMenuItem
-        Action = acBusReemp
+        Action = acSrcReplace
       end
     end
     object mnLenguajes: TMenuItem
-      Caption = '&Lenguajes'
+      Caption = '&Lenguages'
     end
     object mnHerram: TMenuItem
-      Caption = '&Herramientas'
+      Caption = '&Tools'
       object MenuItem23: TMenuItem
-        Caption = '&Configuración'
-        Hint = 'Configurar'
-        ImageIndex = 16
+        Action = AcToolSettings
+        OnClick = MenuItem23Click
       end
     end
-  end
-  object FindDialog1: TFindDialog
-    OnFind = FindDialog1Find
-    Left = 340
-    Top = 95
   end
 end
