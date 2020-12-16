@@ -1,3 +1,16 @@
+1.24
+===
+Se actualiza el proyecto ejemplo /Editor_muestra.
+Se cambia de nombre al procedimiento VerTipoArchivo() por GetFileInfo().
+Se cambia de nombre de AgregArcReciente() a AddRecentFile().
+Se reordena la definición de la clase TSynFacilEditor.
+Se mueven los controles FindDialog1 y ReplaceDialog1 a dentro de la clase TSynFacilEditor.
+Se cambia de nombre de FindNextWord() a FindDialog_Find().
+Se cambia de nombre de ReplaceDialog1Find() a ReplaceDialog_Find().
+Se cambia de nombre de ReplaceDialog1Replace() a ReplaceDialog_Replace().
+Se incluye la opción "¿Continuar desde el principio?" para la ventana de búsqueda.
+Se aumenta información en el archivo README.md.
+
 1.23
 ===
 Se cambia el nombre del tipo TEventoArchivo por TEventFile.

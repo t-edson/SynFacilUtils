@@ -1,4 +1,4 @@
-SynFacilUtils 1.23
+SynFacilUtils 1.24
 ==================
 
 #Descripción
@@ -113,7 +113,7 @@ begin
   edit.LoadSyntaxFromPath;  //para que busque el archivo apropiado
 end;
 ```
-Con este código se leerá la carpeta '.\languages', y se creará un ítem en el menú 'mnLenguajes' por cada archivo XML, que se encuentre allí. Además se caragrá el archivo de sintaxis elegido, cuando se seleccione alguno de los ítems del menú.
+Con este código se leerá la carpeta '.\languages', y se creará un ítem en el menú 'mnLenguajes' por cada archivo XML, que se encuentre allí. Además se cargará el archivo de sintaxis elegido, cuando se seleccione alguno de los ítems del menú.
 
 El método LoadSyntaxFromPath(), carga un archivo de sintaxis, usando la extensión del archivo actual para decidir el archivo a usar. 
 
@@ -137,6 +137,30 @@ El método espera a que se le proporcione un TStringList ya creado como segundo 
 Cada vez que la librería detecte que se está usando un nuevo archivo (como cuando se abre uno nuevo), actualizará el menú asociado. No hay trabajo adicional que se deba hacer una vez que se ha configurado el menú de archivos recientes. 
 
 Tampoco es necesario, definir el "Caption" del ítem del menú usado, ya que la librería usará los nombres 'Recientes' o 'Recents", dependiendo del idioma en que se encuentre configurado.
+
+#Búsqueda y reemplazo
+
+SynFacilUtils tiene integradas las funciones de búsqueda y reemplazo usando formularios estándar de Lazarus.
+
+El siguiente código muestra cómo implementar las opciones comunes de Búsqueda, Siguiente y Reemplazo:
+
+```
+procedure TForm1.acSrcFindExecute(Sender: TObject);
+{Rutina para buscar.}
+begin
+  edit.FindDialog;
+end;
+procedure TForm1.acSrcFindNxExecute(Sender: TObject);
+{Rutina para buscar siguiente.}
+begin
+  edit.FindDialog_Find(self);
+end;
+procedure TForm1.acSrcReplaceExecute(Sender: TObject);
+{Rutina para reemplazar.}
+begin
+  edit.ReplaceDialog;
+end;
+```
 
 #Accesorios
 

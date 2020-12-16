@@ -31,8 +31,8 @@ type
   private
     procedure DoSelectLanguage(Sender: TObject);
     procedure CheckLanguageMenu(XMLfile: string);
-    procedure ReplaceDialog1Find(Sender: TObject);
-    procedure ReplaceDialog1Replace(Sender: TObject);
+    procedure ReplaceDialog_Find(Sender: TObject);
+    procedure ReplaceDialog_Replace(Sender: TObject);
   protected
     ed          : TSynEdit;    //referencia al editor
     fPanLangName: TStatusPanel;
@@ -101,14 +101,6 @@ type
     function OpenDialog(OpenDialog1: TOpenDialog): boolean; virtual;
     function SaveAsDialog(SaveDialog1: TSaveDialog): boolean; virtual;
     function SaveQuery: boolean; virtual;
-    //búsqueda/reemplazo
-    procedure FindDialog;
-    procedure FindNextWord(Sender: TObject);  //el método FindNext() ya existe
-    procedure ReplaceDialog;
-    //herramientas
-    procedure TabToSpaces(fSelFuente: TfrmSelFuente);
-    procedure TrimLines(fSelFuente: TfrmSelFuente);
-    function FiltLines(fSelFuente: TfrmSelFuente; sal: TStringList): boolean;
     //Funciones para cambio de Fin de Línea y Codificación
     procedure ChangeEndLineDelim(nueFor: TLineEnd); //cambia Fin de línea
     procedure InitMenuLineEnding(mnLineEnding0: TMenuItem);  //configura menú
@@ -119,6 +111,17 @@ type
     procedure ChangeFileInform;
     //funciones para completado de código
     procedure CloseCompletionWindow;
+  public  //herramientas
+    procedure TabToSpaces(fSelFuente: TfrmSelFuente);
+    procedure TrimLines(fSelFuente: TfrmSelFuente);
+    function FiltLines(fSelFuente: TfrmSelFuente; sal: TStringList): boolean;
+  public  //Búsqueda/reemplazo
+    //Diálogos para búsqueda/reemplazo
+    FindDialog1: TFindDialog;
+    ReplaceDialog1: TReplaceDialog;
+    procedure FindDialog_Find(Sender: TObject);  //el método FindNext() ya existe
+    procedure FindDialog;
+    procedure ReplaceDialog;
   public  //Espejo de funciones comunes del editor
     procedure Cut;
     procedure Copy;
@@ -126,12 +129,11 @@ type
     procedure Undo;
     procedure Redo;
     procedure SelectAll;
-    //Lee estado
+  public  //Lectura de estado
     function CanUndo: boolean;
     function CanRedo: boolean;
     function CanCopy: boolean;
     function CanPaste: boolean;
-
     property Modified: boolean read GetModified write SetModified;
   public  //Paneles informativos
     property PanFileSaved: TStatusPanel read fPanFileSaved write SetPanFileSaved;
@@ -144,16 +146,16 @@ type
 
     property Text: string read GetText write SetText;  //devuelve el contenido real del editor
     procedure RefreshPanCursor;  //Refresca panel de la posición del cursor
-  public  //Rutinas de inicio
+  public  //Manejo de archivos recientes
     procedure InitMenuRecents(menRecents0: TMenuItem; RecentList: TStringList;
       MaxRecents0: integer=5);
     procedure RecentClick(Sender: TObject);
     procedure ActualMenusReciente(Sender: TObject);
-    procedure AgregArcReciente(arch: string);
-
+    procedure AddRecentFile(arch: string);
+  public  //Inicialización
     procedure InitMenuLanguages(menLanguage0: TMenuItem; LangPath0: string);
-    procedure LoadSyntaxFromFile(XMLfile: string);  //carga un archivo de sintaxis
-    procedure LoadSyntaxFromPath(arc: string='');  //carga sintaxis viendo extensión de archivo
+    procedure LoadSyntaxFromFile(XMLfile: string); //Carga un archivo de sintaxis
+    procedure LoadSyntaxFromPath(arc: string='');  //Carga sintaxis viendo extensión de archivo
     constructor Create(ed0: TsynEdit; nomDef0, extDef0: string); virtual;
     destructor Destroy; override;
   end;
@@ -161,7 +163,7 @@ type
 procedure InicEditorC1(ed: TSynEdit);
 procedure StringToFile(const s: string; const FileName: string);
 function StringFromFile(const FileName: string): string;
-procedure VerTipoArchivo(archivo: string; var Formato: TLineEnd; var Codificacion: string);
+procedure GetFileInfo(filName: string; var lineDel: TLineEnd; var encoding: string);
 function CargarArchivoLin(arc8: string; Lineas: TStrings;
                            var TipArc: TLineEnd; var CodArc: string): string;
 function GuardarArchivoLin(arc0: string; Lineas: TStrings;
@@ -170,10 +172,6 @@ implementation
 const
   szChar = SizeOf(Char);
 
-var
-  //Diálogos para búsqueda/reemplazo
-  FindDialog1: TFindDialog;
-  ReplaceDialog1: TReplaceDialog;
 
 procedure msgErr(msje: string);  //Rutina útil
 //Mensaje de error
@@ -227,7 +225,7 @@ begin
     FreeAndNil(FileStream);
   end; // try
 end;
-procedure VerTipoArchivo(archivo: string; var Formato: TLineEnd; var Codificacion: string);
+procedure GetFileInfo(filName: string; var lineDel: TLineEnd; var encoding: string);
 (*Obtiene el tipo de delimitador de línea (Line Ending) de un archivo de texto, explorando
  los primeros bytes de archivo. Solo explora los primeros 8K del archivo.
  Si no encuentra un salto de línea en ese tamaño, no podrá deetrminar de que tipo de
@@ -242,8 +240,8 @@ var ar: file;
     Leidos: Word;   //bytes leidos
 begin
    //Lee bloque de datos
-   AssignFile(ar,archivo);
-   reset(ar,1);  { TODO : Dio error al abrir un archivo de solo lectura }
+   AssignFile(ar,filName);
+   reset(ar,1);  { TODO : Dio error al abrir un filName de solo lectura }
    BlockRead(ar, bolsa{%H-}, TAM_BOL, Leidos{%H-});  //Lectura masiva
    CloseFile(ar);
    bolsa[Leidos] := #0; //agrega delimitador
@@ -254,22 +252,22 @@ begin
    if Pos13 = 0 then
       //solo hay separador #10 o ninguno
       if Pos10<>0 then
-         Formato := TAR_UNIX     //solo hay #10
+         lineDel := TAR_UNIX     //solo hay #10
       else
-         Formato := TAR_DESC  //no se encontró separador
+         lineDel := TAR_DESC  //no se encontró separador
    else if Pos10 = 0 then
       //solo hay separador #13 o ninguno
       if Pos13 <> 0 then
-         Formato := TAR_MAC     //solo hay #13
+         lineDel := TAR_MAC     //solo hay #13
       else
-         Formato := TAR_DESC  //no se encontró separador
+         lineDel := TAR_DESC  //no se encontró separador
    else if Pos10 = Pos13 + 1 then
-      Formato := TAR_DOS    //no se encontró #13#10
+      lineDel := TAR_DOS    //no se encontró #13#10
    else
-      Formato := TAR_DESC;  //no se reconoce delimitadores
+      lineDel := TAR_DESC;  //no se reconoce delimitadores
    //Analiza codifiación
-   Codificacion := GuessEncoding(Pbolsa);  //analiza los primeros bytes
-{ TODO : Ver por qué no detectó correctaente la carga de un archivo UTF-8 sin BOM }
+   encoding := GuessEncoding(Pbolsa);  //analiza los primeros bytes
+{ TODO : Ver por qué no detectó correctaente la carga de un filName UTF-8 sin BOM }
 end;
 function LineEnd_To_Str(delim: TLineEnd): string;
 //proporciona una descripción al tipo de delimitador
@@ -304,7 +302,7 @@ var
 begin
   CodArc := '';
   arc0 := UTF8ToSys(arc8);   //pone en modo ANSI
-  VerTipoArchivo(arc0, TipArc, CodArc);  //actualiza tipo de archivo de trabajo
+  GetFileInfo(arc0, TipArc, CodArc);  //actualiza tipo de archivo de trabajo
   //Carga archivo solicitado
   Lineas.LoadFromFile(arc8);
   //realiza las conversiones necesarias, ya que "ed", solo maneja UTF-8
@@ -410,13 +408,11 @@ begin
   //Pasa el evento
   if OnKeyUp <> nil then OnKeyUp(Sender, Key, Shift);
 end;
-
 procedure TSynFacilEditor.edKeyPress(Sender: TObject; var Key: char);
 begin
   //Pasa evento
   if OnKeyPress <> nil then OnKeyPress(Sender, Key);
 end;
-
 procedure TSynFacilEditor.edUTF8KeyPress(Sender: TObject; var UTF8Key: TUTF8Char
   );
 begin
@@ -424,134 +420,6 @@ begin
   hl.UTF8KeyPress(Sender, UTF8Key);
   //Pasa el evento
   if OnUTF8KeyPress <> nil then OnUTF8KeyPress(Sender, UTF8Key);
-end;
-
-//Manejo de archivos recientes
-procedure TSynFacilEditor.InitMenuRecents(menRecents0: TMenuItem; RecentList: TStringList;
-                                     MaxRecents0: integer=5);
-//Configura un menú, con el historial de los archivos abiertos recientemente
-//"nRecents", es el número de archivos recientes que se guardará
-var
-  i: Integer;
-begin
-  mnRecents := menRecents0;
-  RecentFiles := RecentList;  //gaurda referencia a lista
-  MaxRecents := MaxRecents0;
-  //configura menú
-  mnRecents.Caption:= '&Recents';
-  mnRecents.OnClick:=@ActualMenusReciente;
-  for i:= 1 to MaxRecents do begin
-    AddItemToMenu(mnRecents, '&'+IntToStr(i), @RecentClick);
-  end;
-end;
-procedure TSynFacilEditor.RecentClick(Sender: TObject);
-//Se selecciona un archivo de la lista de recientes
-begin
-  if SaveQuery then Exit;   //Verifica cambios
-  LoadFile(MidStr(TMenuItem(Sender).Caption,4,150));
-end;
-procedure TSynFacilEditor.ActualMenusReciente(Sender: TObject);
-{Actualiza el menú de archivos recientes con la lista de los archivos abiertos
-recientemente. }
-var
-  i: Integer;
-begin
-  if mnRecents = nil then exit;
-  if RecentFiles = nil then exit;
-  //proteciión
-  if RecentFiles.Count = 0 then begin
-    mnRecents[0].Caption:='No files';
-    mnRecents[0].Enabled:=false;
-    for i:= 1 to mnRecents.Count-1 do begin
-      mnRecents[i].Visible:=false;
-    end;
-    exit;
-  end;
-  //hace visible los ítems
-  mnRecents[0].Enabled:=true;
-  for i:= 0 to mnRecents.Count-1 do begin
-    if i<RecentFiles.Count then
-      mnRecents[i].Visible:=true
-    else
-      mnRecents[i].Visible:=false;
-  end;
-  //pone etiquetas a los menús, incluyendo un atajo numérico
-  for i:=0 to RecentFiles.Count-1 do begin
-    mnRecents[i].Caption := '&'+IntToStr(i+1)+' '+RecentFiles[i];
-  end;
-end;
-procedure TSynFacilEditor.AgregArcReciente(arch: string);
-//Agrega el nombre de un archivo reciente
-var hay: integer; //bandera-índice
-    i: integer;
-begin
-  if RecentFiles = nil then exit;
-  //verifica si ya existe
-  hay := -1;   //valor inicial
-  for i:= 0 to RecentFiles.Count-1 do
-    if RecentFiles[i] = arch then hay := i;
-  if hay = -1 then  //no existe
-    RecentFiles.Insert(0,arch)  //agrega al inicio
-  else begin //ya existe
-    RecentFiles.Delete(hay);     //lo elimina
-    RecentFiles.Insert(0,arch);  //lo agrega al inicio
-  end;
-  while RecentFiles.Count>MaxRecents do  //mantiene tamaño máximo
-    RecentFiles.Delete(MaxRecents);
-end;
-
-procedure TSynFacilEditor.ReplaceDialog1Find(Sender: TObject);
-var
-  encon  : integer;
-  buscado : string;
-  opciones: TSynSearchOptions;
-begin
-  buscado := ReplaceDialog1.FindText;
-  opciones := [];
-  if not(frDown in ReplaceDialog1.Options) then opciones += [ssoBackwards];
-  if frMatchCase in ReplaceDialog1.Options then opciones += [ssoMatchCase];
-  if frWholeWord in ReplaceDialog1.Options then opciones += [ssoWholeWord];
-  if frEntireScope in ReplaceDialog1.Options then opciones += [ssoEntireScope];
-
-  encon := ed.SearchReplace(buscado,'',opciones);
-  if encon = 0 then
-    MsgBox('No found: %s', [buscado]);
-end;
-procedure TSynFacilEditor.ReplaceDialog1Replace(Sender: TObject);
-var
-  encon, r : integer;
-  buscado : string;
-  opciones: TSynSearchOptions;
-begin
-  buscado := ReplaceDialog1.FindText;
-  opciones := [ssoFindContinue];
-//  opciones := [];
-  if not(frDown in ReplaceDialog1.Options) then opciones += [ssoBackwards];
-  if frMatchCase in ReplaceDialog1.Options then opciones += [ssoMatchCase];
-  if frWholeWord in ReplaceDialog1.Options then opciones += [ssoWholeWord];
-  if frEntireScope in ReplaceDialog1.Options then opciones += [ssoEntireScope];
-  if frReplaceAll in ReplaceDialog1.Options then begin
-    //se ha pedido reemplazar todo
-    encon := ed.SearchReplace(buscado,ReplaceDialog1.ReplaceText,
-                              opciones+[ssoReplaceAll]);  //reemplaza
-    msgbox('%d occurrences were replaced.',[encon]);
-    exit;
-  end;
-  //reemplazo con confirmación
-  ReplaceDialog1.CloseDialog;
-  encon := ed.SearchReplace(buscado,'',opciones);  //búsqueda
-  while encon <> 0 do begin
-      //pregunta
-      r := Application.MessageBox(Pchar('Replace this?'),
-                Pchar('Replace'), MB_YESNOCANCEL);
-      if r = IDCANCEL then exit;
-      if r = IDYES then begin
-        ed.TextBetweenPoints[ed.BlockBegin,ed.BlockEnd] := ReplaceDialog1.ReplaceText;
-      end;
-      //busca siguiente
-      encon := ed.SearchReplace(buscado,'',opciones);  //búsca siguiente
-  end;
-  MsgBox('No found: %s', [buscado]);
 end;
 procedure TSynFacilEditor.SetModified(valor: boolean);
 //Cambia el valor del campo "Modified", del editor
@@ -680,7 +548,7 @@ begin
   linErr := 0;            //limpia línea marcada por si acaso
   ChangeFileInform;   //actualiza
   if OnFileOpened<>nil then OnFileOpened;  //dispara evento
-  AgregArcReciente(arc8);  //agrega a lista de recientes
+  AddRecentFile(arc8);  //agrega a lista de recientes
 end;
 procedure TSynFacilEditor.SaveFile;
 //Guarda el contenido del editor en su archivo correspondiente
@@ -759,42 +627,7 @@ begin
     end;
   end;
 end;
-//Búsqueda y reemplazo
-procedure TSynFacilEditor.FindDialog;
-//Realiza una búsqueda en el texto del editor, usando el ´diálogo de búsqeudas.
-begin
-  FindDialog1.OnFind:=@FindNextWord;
-  if ed.SelAvail then FindDialog1.FindText:=ed.SelText;
-  FindDialog1.Execute;
-end;
-procedure TSynFacilEditor.FindNextWord(Sender: TObject);
-//Se ejecuta para encontrar el siguiente elemento. Es llamado por el evento FindText()
-//de "FindDialog1", pero puede ser llamado también de forma directa.
-var
-  encon  : integer;
-  buscado : string;
-  opciones: TSynSearchOptions;
-begin
-  buscado := FindDialog1.FindText;
-  opciones := [];
-  if not(frDown in FindDialog1.Options) then opciones += [ssoBackwards];
-  if frMatchCase in FindDialog1.Options then opciones += [ssoMatchCase];
-  if frWholeWord in FindDialog1.Options then opciones += [ssoWholeWord];
-  if frEntireScope in FindDialog1.Options then opciones += [ssoEntireScope];
-
-  encon := ed.SearchReplace(buscado,'',opciones);
-  if encon = 0 then
-    MsgBox('No found: %s', [buscado]);
-end;
-procedure TSynFacilEditor.ReplaceDialog;
-//Realiza una búsqueda en el texto del editor, usando el ´diálogo de búsqeudas.
-begin
-  ReplaceDialog1.OnFind:=@ReplaceDialog1Find;
-  ReplaceDialog1.OnReplace:=@ReplaceDialog1Replace;
-  if ed.SelAvail then ReplaceDialog1.FindText:=ed.SelText;
-  ReplaceDialog1.Execute;
-end;
-//herramientas
+//Herramientas
 procedure TSynFacilEditor.TabToSpaces(fSelFuente: TfrmSelFuente);
 //Convierte tabulaciones a espacios.
 //Requiere un formaulario de tipo TfrmSelFuente para mostrar el dialogo.
@@ -987,6 +820,104 @@ procedure TSynFacilEditor.CloseCompletionWindow;
 begin
   hl.CloseCompletionWindow;
 end;
+//Búsqueda y reemplazo
+procedure TSynFacilEditor.FindDialog_Find(Sender: TObject);
+//Se ejecuta para encontrar el siguiente elemento. Es llamado por el evento OnFind()
+//de "FindDialog1", pero puede ser llamado también de forma directa, por es es público.
+var
+  encon  : integer;
+  target : string;
+  opciones: TSynSearchOptions;
+begin
+  target := FindDialog1.FindText;
+  opciones := [];
+  if not(frDown in FindDialog1.Options) then opciones += [ssoBackwards];
+  if frMatchCase in FindDialog1.Options then opciones += [ssoMatchCase];
+  if frWholeWord in FindDialog1.Options then opciones += [ssoWholeWord];
+  if frEntireScope in FindDialog1.Options then opciones += [ssoEntireScope];
+
+  encon := ed.SearchReplace(target,'',opciones);
+  if encon = 0 then begin
+    //MsgBox('No found: %s', [target]);
+    if MsgYesNo('No found: %s. Continue from start?', [target]) = 1 then begin
+      ed.CaretX := 1;
+      ed.CaretY := 1;
+    end;
+  end;
+end;
+procedure TSynFacilEditor.ReplaceDialog_Find(Sender: TObject);
+var
+  encon  : integer;
+  target : string;
+  opciones: TSynSearchOptions;
+begin
+  target := ReplaceDialog1.FindText;
+  opciones := [];
+  if not(frDown in ReplaceDialog1.Options) then opciones += [ssoBackwards];
+  if frMatchCase in ReplaceDialog1.Options then opciones += [ssoMatchCase];
+  if frWholeWord in ReplaceDialog1.Options then opciones += [ssoWholeWord];
+  if frEntireScope in ReplaceDialog1.Options then opciones += [ssoEntireScope];
+
+  encon := ed.SearchReplace(target,'',opciones);
+  if encon = 0 then begin
+    //MsgBox('No found: %s', [target]);
+    if MsgYesNo('No found: %s. Continue from start?', [target]) = 1 then begin
+      ed.CaretX := 1;
+      ed.CaretY := 1;
+    end;
+  end;
+end;
+procedure TSynFacilEditor.ReplaceDialog_Replace(Sender: TObject);
+var
+  encon, r : integer;
+  buscado : string;
+  opciones: TSynSearchOptions;
+begin
+  buscado := ReplaceDialog1.FindText;
+  opciones := [ssoFindContinue];
+//  opciones := [];
+  if not(frDown in ReplaceDialog1.Options) then opciones += [ssoBackwards];
+  if frMatchCase in ReplaceDialog1.Options then opciones += [ssoMatchCase];
+  if frWholeWord in ReplaceDialog1.Options then opciones += [ssoWholeWord];
+  if frEntireScope in ReplaceDialog1.Options then opciones += [ssoEntireScope];
+  if frReplaceAll in ReplaceDialog1.Options then begin
+    //se ha pedido reemplazar todo
+    encon := ed.SearchReplace(buscado,ReplaceDialog1.ReplaceText,
+                              opciones+[ssoReplaceAll]);  //reemplaza
+    msgbox('%d occurrences were replaced.',[encon]);
+    exit;
+  end;
+  //reemplazo con confirmación
+  ReplaceDialog1.CloseDialog;
+  encon := ed.SearchReplace(buscado,'',opciones);  //búsqueda
+  while encon <> 0 do begin
+      //pregunta
+      r := Application.MessageBox(Pchar('Replace this?'),
+                Pchar('Replace'), MB_YESNOCANCEL);
+      if r = IDCANCEL then exit;
+      if r = IDYES then begin
+        ed.TextBetweenPoints[ed.BlockBegin,ed.BlockEnd] := ReplaceDialog1.ReplaceText;
+      end;
+      //busca siguiente
+      encon := ed.SearchReplace(buscado,'',opciones);  //búsca siguiente
+  end;
+  MsgBox('No found: %s', [buscado]);
+end;
+procedure TSynFacilEditor.FindDialog;
+//Realiza una búsqueda en el texto del editor, usando el ´diálogo de búsqeudas.
+begin
+  FindDialog1.OnFind:=@FindDialog_Find;
+  if ed.SelAvail then FindDialog1.FindText:=ed.SelText;
+  FindDialog1.Execute;
+end;
+procedure TSynFacilEditor.ReplaceDialog;
+//Realiza una búsqueda en el texto del editor, usando el ´diálogo de búsqeudas.
+begin
+  ReplaceDialog1.OnFind:=@ReplaceDialog_Find;
+  ReplaceDialog1.OnReplace:=@ReplaceDialog_Replace;
+  if ed.SelAvail then ReplaceDialog1.FindText:=ed.SelText;
+  ReplaceDialog1.Execute;
+end;
 //Espejo de funciones comunes del editor
 procedure TSynFacilEditor.Cut;
 begin
@@ -1014,7 +945,7 @@ procedure TSynFacilEditor.SelectAll;
 begin
   ed.SelectAll;
 end;
-//Lee estado
+//Lectura de estado
 function TSynFacilEditor.CanUndo: boolean;
 //Indica si Hay Algo por deshacer
 begin
@@ -1034,33 +965,6 @@ function TSynFacilEditor.CanPaste: boolean;
 //Indica si Hay Algo por pegar
 begin
   Result := ed.CanPaste;
-end;
-procedure TSynFacilEditor.RefreshPanCursor;
-begin
-  if fPanCursorPos <> nil then
-    fPanCursorPos.Text:= Format('row=%d col=%d', [ed.CaretY, ed.CaretX]);
-end;
-procedure TSynFacilEditor.InitMenuLanguages(menLanguage0: TMenuItem; LangPath0: string);
-//Inicia un menú con la lista de archivos XML (que representan a lenguajes) que hay
-//en una carpeta en particular y les asigna un evento.
-var
-  Hay: Boolean;
-  SR : TSearchRec;
-begin
-  if menLanguage0 = nil then exit;
-  mnLanguages := menLanguage0;  //guarda referencia a menú
-  LangPath := LangPath0;        //guarda ruta
-  if (LangPath<>'') and (LangPath[length(LangPath)] <> DirectorySeparator) then
-     LangPath+=DirectorySeparator;
-  //configura menú
-  mnLanguages.Caption:= '&Languages';
-  //explora archivos
-  Hay := FindFirst(LangPath + '*.xml', faAnyFile - faDirectory, SR) = 0;
-  while Hay do begin
-     //encontró archivo
-    AddItemToMenu(mnLanguages, '&'+ChangeFileExt(SR.name,''),@DoSelectLanguage);
-    Hay := FindNext(SR) = 0;
-  end;
 end;
 procedure TSynFacilEditor.DoSelectLanguage(Sender: TObject);
 //Se ha seleccionado un lenguaje desde el menú.
@@ -1086,6 +990,108 @@ begin
   XML := ExtractFileName(XMLfile);  //por si tenía ruta
   XML := ChangeFileExt(XML,'');
   CheckOnlyOneItem(mnLanguages, XML);
+end;
+//Paneles informativos
+procedure TSynFacilEditor.RefreshPanCursor;
+begin
+  if fPanCursorPos <> nil then
+    fPanCursorPos.Text:= Format('row=%d col=%d', [ed.CaretY, ed.CaretX]);
+end;
+//Manejo de archivos recientes
+procedure TSynFacilEditor.InitMenuRecents(menRecents0: TMenuItem; RecentList: TStringList;
+                                     MaxRecents0: integer=5);
+//Configura un menú, con el historial de los archivos abiertos recientemente
+//"nRecents", es el número de archivos recientes que se guardará
+var
+  i: Integer;
+begin
+  mnRecents := menRecents0;
+  RecentFiles := RecentList;  //gaurda referencia a lista
+  MaxRecents := MaxRecents0;
+  //configura menú
+  mnRecents.Caption:= '&Recents';
+  mnRecents.OnClick:=@ActualMenusReciente;
+  for i:= 1 to MaxRecents do begin
+    AddItemToMenu(mnRecents, '&'+IntToStr(i), @RecentClick);
+  end;
+end;
+procedure TSynFacilEditor.RecentClick(Sender: TObject);
+//Se selecciona un archivo de la lista de recientes
+begin
+  if SaveQuery then Exit;   //Verifica cambios
+  LoadFile(MidStr(TMenuItem(Sender).Caption,4,150));
+end;
+procedure TSynFacilEditor.ActualMenusReciente(Sender: TObject);
+{Actualiza el menú de archivos recientes con la lista de los archivos abiertos
+recientemente. }
+var
+  i: Integer;
+begin
+  if mnRecents = nil then exit;
+  if RecentFiles = nil then exit;
+  //proteciión
+  if RecentFiles.Count = 0 then begin
+    mnRecents[0].Caption:='No files';
+    mnRecents[0].Enabled:=false;
+    for i:= 1 to mnRecents.Count-1 do begin
+      mnRecents[i].Visible:=false;
+    end;
+    exit;
+  end;
+  //hace visible los ítems
+  mnRecents[0].Enabled:=true;
+  for i:= 0 to mnRecents.Count-1 do begin
+    if i<RecentFiles.Count then
+      mnRecents[i].Visible:=true
+    else
+      mnRecents[i].Visible:=false;
+  end;
+  //pone etiquetas a los menús, incluyendo un atajo numérico
+  for i:=0 to RecentFiles.Count-1 do begin
+    mnRecents[i].Caption := '&'+IntToStr(i+1)+' '+RecentFiles[i];
+  end;
+end;
+procedure TSynFacilEditor.AddRecentFile(arch: string);
+//Agrega el nombre de un archivo reciente
+var hay: integer; //bandera-índice
+    i: integer;
+begin
+  if RecentFiles = nil then exit;
+  //verifica si ya existe
+  hay := -1;   //valor inicial
+  for i:= 0 to RecentFiles.Count-1 do
+    if RecentFiles[i] = arch then hay := i;
+  if hay = -1 then  //no existe
+    RecentFiles.Insert(0,arch)  //agrega al inicio
+  else begin //ya existe
+    RecentFiles.Delete(hay);     //lo elimina
+    RecentFiles.Insert(0,arch);  //lo agrega al inicio
+  end;
+  while RecentFiles.Count>MaxRecents do  //mantiene tamaño máximo
+    RecentFiles.Delete(MaxRecents);
+end;
+//Inicialización
+procedure TSynFacilEditor.InitMenuLanguages(menLanguage0: TMenuItem; LangPath0: string);
+//Inicia un menú con la lista de archivos XML (que representan a lenguajes) que hay
+//en una carpeta en particular y les asigna un evento.
+var
+  Hay: Boolean;
+  SR : TSearchRec;
+begin
+  if menLanguage0 = nil then exit;
+  mnLanguages := menLanguage0;  //guarda referencia a menú
+  LangPath := LangPath0;        //guarda ruta
+  if (LangPath<>'') and (LangPath[length(LangPath)] <> DirectorySeparator) then
+     LangPath+=DirectorySeparator;
+  //configura menú
+  mnLanguages.Caption:= '&Languages';
+  //explora archivos
+  Hay := FindFirst(LangPath + '*.xml', faAnyFile - faDirectory, SR) = 0;
+  while Hay do begin
+     //encontró archivo
+    AddItemToMenu(mnLanguages, '&'+ChangeFileExt(SR.name,''),@DoSelectLanguage);
+    Hay := FindNext(SR) = 0;
+  end;
 end;
 procedure TSynFacilEditor.LoadSyntaxFromFile(XMLfile: string);
 //Carga un archivo de sintaxis en el editor.
@@ -1136,21 +1142,24 @@ begin
     fPanLangName.Text:= 'No language';
   end;
 end;
-
 constructor TSynFacilEditor.Create(ed0: TsynEdit; nomDef0, extDef0: string);
 begin
+  //Crea diálogos
+  FindDialog1:= TFindDialog.Create(nil);
+  ReplaceDialog1:= TReplaceDialog.Create(nil);
+  //Inicialización
   ed := ed0;
   hl := TSynFacilComplet.Create(ed.Owner);  //crea resaltador
   hl.SelectEditor(ed);  //inicia
   //intercepta eventos
-  ed.OnChange:=@edChange;   //necesita interceptar los cambios
-  ed.OnStatusChange:=@edStatusChange;
-  ed.OnMouseDown:=@edMouseDown;
-  ed.OnKeyUp:=@edKeyUp;     //para funcionamiento del completado
-  ed.OnKeyDown:=@edKeyDown;
-  ed.OnKeyPress:=@edKeyPress;
-  ed.OnUTF8KeyPress:=@edUTF8KeyPress;
-  ed.OnCommandProcessed:=@edCommandProcessed;  //necesita para actualizar el cursor
+  ed.OnChange          := @edChange;   //Necesita interceptar los cambios
+  ed.OnStatusChange    := @edStatusChange;
+  ed.OnMouseDown       := @edMouseDown;
+  ed.OnKeyUp           := @edKeyUp;    //Para funcionamiento del completado
+  ed.OnKeyDown         := @edKeyDown;
+  ed.OnKeyPress        := @edKeyPress;
+  ed.OnUTF8KeyPress    := @edUTF8KeyPress;
+  ed.OnCommandProcessed:= @edCommandProcessed;  //Necesita para actualizar el cursor
 //  RecentFiles := TStringList.Create;
   MaxRecents := 1;   //Inicia con 1
   //guarda parámetros
@@ -1162,16 +1171,10 @@ destructor TSynFacilEditor.Destroy;
 begin
   hl.UnSelectEditor;
   hl.Free;
-//  RecentFiles.Free;
+  ReplaceDialog1.Destroy;
+  FindDialog1.Destroy;
   inherited Destroy;
 end;
 
-initialization
-  //crea diálogos
-  FindDialog1:= TFindDialog.Create(nil);
-  ReplaceDialog1:= TReplaceDialog.Create(nil);
-finalization;
-  ReplaceDialog1.Destroy;
-  FindDialog1.Destroy;
 end.
 
