@@ -69,7 +69,6 @@ implementation
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   edit := TSynFacilEditor.Create(SynEdit1,'NoName', 'txt');
-  edit.SetLanguage('en');
   edit.OnChangeEditorState:=@ChangeEditorState;
   //define paneles
   edit.PanFileSaved := StatusBar1.Panels[0]; //panel para mensaje "Guardado"

@@ -1,32 +1,33 @@
 object Form1: TForm1
   Left = 254
-  Height = 248
+  Height = 310
   Top = 309
-  Width = 508
+  Width = 635
   Caption = 'Form1'
-  ClientHeight = 228
-  ClientWidth = 508
+  ClientHeight = 285
+  ClientWidth = 635
+  DesignTimePPI = 120
   Menu = MainMenu1
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnDropFiles = FormDropFiles
   OnShow = FormShow
-  LCLVersion = '1.2.4.0'
+  LCLVersion = '2.0.10.0'
   inline SynEdit1: TSynEdit
     Left = 0
-    Height = 205
+    Height = 257
     Top = 0
-    Width = 508
+    Width = 635
     Align = alClient
-    Font.Height = -13
+    Font.Height = -16
     Font.Name = 'Courier New'
     Font.Pitch = fpFixed
     Font.Quality = fqNonAntialiased
     ParentColor = False
     ParentFont = False
     TabOrder = 0
-    Gutter.Width = 57
+    Gutter.Width = 72
     Gutter.MouseActions = <>
     RightGutter.Width = 0
     RightGutter.MouseActions = <>
@@ -458,7 +459,6 @@ object Form1: TForm1
       'SynEdit1'
     )
     VisibleSpecialChars = [vscSpace, vscTabAtLast]
-    SelectedColor.FrameEdges = sfeAround
     SelectedColor.BackPriority = 50
     SelectedColor.ForePriority = 50
     SelectedColor.FramePriority = 50
@@ -466,57 +466,49 @@ object Form1: TForm1
     SelectedColor.ItalicPriority = 50
     SelectedColor.UnderlinePriority = 50
     SelectedColor.StrikeOutPriority = 50
-    IncrementColor.FrameEdges = sfeAround
-    HighlightAllColor.FrameEdges = sfeAround
     BracketHighlightStyle = sbhsBoth
     BracketMatchColor.Background = clNone
     BracketMatchColor.Foreground = clNone
-    BracketMatchColor.FrameEdges = sfeAround
     BracketMatchColor.Style = [fsBold]
     FoldedCodeColor.Background = clNone
     FoldedCodeColor.Foreground = clGray
     FoldedCodeColor.FrameColor = clGray
-    FoldedCodeColor.FrameEdges = sfeAround
     MouseLinkColor.Background = clNone
     MouseLinkColor.Foreground = clBlue
-    MouseLinkColor.FrameEdges = sfeAround
     LineHighlightColor.Background = clNone
     LineHighlightColor.Foreground = clNone
-    LineHighlightColor.FrameEdges = sfeAround
     inline SynLeftGutterPartList1: TSynGutterPartList
       object SynGutterMarks1: TSynGutterMarks
-        Width = 24
+        Width = 30
         MouseActions = <>
       end
       object SynGutterLineNumber1: TSynGutterLineNumber
-        Width = 17
+        Width = 21
         MouseActions = <>
         MarkupInfo.Background = clBtnFace
         MarkupInfo.Foreground = clNone
-        MarkupInfo.FrameEdges = sfeAround
         DigitCount = 2
         ShowOnlyLineNumbersMultiplesOf = 1
         ZeroStart = False
         LeadingZeros = False
       end
       object SynGutterChanges1: TSynGutterChanges
-        Width = 4
+        Width = 5
         MouseActions = <>
         ModifiedColor = 59900
         SavedColor = clGreen
       end
       object SynGutterSeparator1: TSynGutterSeparator
-        Width = 2
+        Width = 3
         MouseActions = <>
         MarkupInfo.Background = clWhite
         MarkupInfo.Foreground = clGray
-        MarkupInfo.FrameEdges = sfeAround
       end
       object SynGutterCodeFolding1: TSynGutterCodeFolding
+        Width = 13
         MouseActions = <>
         MarkupInfo.Background = clNone
         MarkupInfo.Foreground = clGray
-        MarkupInfo.FrameEdges = sfeAround
         MouseActionsExpanded = <>
         MouseActionsCollapsed = <>
       end
@@ -524,30 +516,31 @@ object Form1: TForm1
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Height = 23
-    Top = 205
-    Width = 508
+    Height = 28
+    Top = 257
+    Width = 635
     Panels = <    
       item
-        Width = 70
+        Width = 88
       end    
       item
-        Width = 80
+        Width = 100
       end    
       item
-        Width = 70
+        Width = 88
       end    
       item
-        Width = 70
+        Width = 88
       end    
       item
-        Width = 50
+        Width = 62
       end>
+    ParentFont = False
     SimplePanel = False
   end
   object MainMenu1: TMainMenu
-    left = 16
-    top = 16
+    Left = 20
+    Top = 20
     object MenuItem1: TMenuItem
       Caption = '&File'
       object mnNew: TMenuItem
@@ -604,11 +597,11 @@ object Form1: TForm1
     end
   end
   object OpenDialog1: TOpenDialog
-    left = 88
-    top = 16
+    Left = 110
+    Top = 20
   end
   object SaveDialog1: TSaveDialog
-    left = 160
-    top = 16
+    Left = 200
+    Top = 20
   end
 end
